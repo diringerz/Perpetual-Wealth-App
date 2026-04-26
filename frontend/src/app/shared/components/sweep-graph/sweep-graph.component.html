@@ -1,0 +1,144 @@
+<div class="graph-card">
+
+  <!-- Header -->
+  <div class="graph-header">
+    <div class="graph-title">
+      <span class="var-label">W₀ vs {{ meta.label }}</span>
+      <span class="var-unit">{{ meta.description }}</span>
+    </div>
+    <button class="btn-refresh" (click)="refresh()" [disabled]="loading">
+      <span *ngIf="!loading">↻ Refresh</span>
+      <span *ngIf="loading">Loading…</span>
+    </button>
+  </div>
+
+  <!-- Snapshot indicator -->
+  <div class="snapshot-bar" *ngIf="snapshot">
+    <span class="snapshot-label">Constants used:</span>
+    <span class="snapshot-param" *ngFor="let entry of snapshotParamEntries()">
+      {{ entry.label }}: <strong>{{ entry.value }}</strong>
+    </span>
+    <span class="snapshot-time">
+      fetched {{ snapshot.fetchedAt | date:'HH:mm:ss' }}
+    </span>
+  </div>
+
+  <!-- Sweep range controls -->
+  <div class="range-controls">
+    <div class="range-field">
+      <label>Min {{ meta.unit }}</label>
+      <input
+        type="number"
+        [min]="meta.min"
+        [max]="localRange.max - meta.step"
+        [step]="meta.step"
+        [value]="localRange.min"
+        (change)="onRangeMinChange(+$any($event.target).value)"
+      />
+    </div>
+    <div class="range-field">
+      <label>Max {{ meta.unit }}</label>
+      <input
+        type="number"
+        [min]="localRange.min + meta.step"
+        [max]="meta.max"
+        [step]="meta.step"
+        [value]="localRange.max"
+        (change)="onRangeMaxChange(+$any($event.target).value)"
+      />
+    </div>
+    <div class="range-field">
+      <label>Points</label>
+      <input
+        type="number"
+        min="10"
+        max="2000"
+        step="10"
+        [value]="localRange.n_points"
+        (change)="onNPointsChange(+$any($event.target).value)"
+      />
+    </div>
+  </div>
+
+  <!-- Asymptote warning -->
+  <div class="asymptote-banner" *ngIf="response?.asymptotes?.length">
+    <span>
+      ⚠ Asymptote at {{ meta.label }} =
+      {{ formatX(response!.asymptotes[0]) }} —
+      required wealth approaches infinity at this value.
+    </span>
+  </div>
+
+  <!-- Error state -->
+  <div class="error-state" *ngIf="error">{{ error }}</div>
+
+  <!-- Loading state -->
+  <div class="loading-state" *ngIf="loading">Loading…</div>
+
+  <!--
+    Chart wrapper.
+
+    Required SCSS:
+      .chart-wrapper {
+        position: relative;
+        height: 320px;        // give the canvas a fixed height
+      }
+      .chart-plot-area {
+        position: absolute;
+        // inset matches Chart.js default layout padding — tune if needed
+        top: 10px; left: 50px; right: 10px; bottom: 40px;
+        pointer-events: none;
+      }
+      .asymptote-line {
+        position: absolute;
+        top: 0; bottom: 0;
+        width: 2px;
+        transform: translateX(-50%);
+        background: repeating-linear-gradient(
+          to bottom,
+          #f59e0b 0px, #f59e0b 6px,
+          transparent 6px, transparent 12px
+        );
+      }
+  -->
+  <div class="chart-wrapper" *ngIf="!loading && !error && chartData.datasets.length">
+
+    <!--
+      ng2-charts directive.
+      [type]       — chart type
+      [data]       — ChartData<'line'> bound from component
+      [options]    — ChartOptions<'line'> bound from component
+    -->
+    <canvas
+      baseChart
+      [type]="'line'"
+      [data]="chartData"
+      [options]="chartOptions"
+      [plugins]="[asymptotePlugin]"
+    ></canvas>
+
+  </div>
+
+  <!-- Sensitivity at base -->
+  <div class="sensitivity-panel" *ngIf="response?.sensitivity_at_base">
+    <div class="sens-item">
+      <span class="sens-label">∂W₀/∂{{ sweepVar }}</span>
+      <span class="sens-value">
+        {{ response!.sensitivity_at_base.dW0_dx | number:'1.0-0' }}
+      </span>
+    </div>
+    <div class="sens-item">
+      <span class="sens-label">Elasticity</span>
+      <span class="sens-value">
+        {{ response!.sensitivity_at_base.elasticity | number:'1.4-4' }}
+      </span>
+    </div>
+    <div class="sens-item">
+      <span class="sens-label">∂²W₀/∂{{ sweepVar }}²</span>
+      <span class="sens-value">
+        {{ response!.sensitivity_at_base.d2W0_dx2 | number:'1.0-0' }}
+      </span>
+    </div>
+  </div>
+
+</div>

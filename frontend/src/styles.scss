@@ -1,0 +1,117 @@
+@use 'styles/variables' as v;
+@use 'styles/mixins' as m;
+
+// ---------------------------------------------------------------------------
+// Google Fonts
+// ---------------------------------------------------------------------------
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+// ---------------------------------------------------------------------------
+// Reset
+// ---------------------------------------------------------------------------
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin:     0;
+  padding:    0;
+}
+
+html {
+  font-size:               16px;
+  -webkit-font-smoothing:  antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  scroll-behavior:         smooth;
+}
+
+body {
+  font-family:   v.$font-sans;
+  font-size:     v.$text-base;
+  color:         v.$text-primary;
+  background:    v.$off-white;
+  line-height:   v.$leading-normal;
+  min-height:    100vh;
+}
+
+// ---------------------------------------------------------------------------
+// Typography reset
+// ---------------------------------------------------------------------------
+
+h1, h2, h3, h4, h5, h6 {
+  font-family:  v.$font-sans;
+  font-weight:  v.$weight-bold;
+  color:        v.$text-primary;
+  line-height:  v.$leading-tight;
+}
+
+p { line-height: v.$leading-relaxed; }
+
+a {
+  color:           v.$teal;
+  text-decoration: none;
+  transition:      color v.$transition-fast;
+  &:hover { color: v.$teal-light; }
+}
+
+code, pre {
+  font-family: v.$font-mono;
+  font-size:   0.9em;
+}
+
+ul, ol {
+  list-style: none;
+}
+
+button {
+  font-family: v.$font-sans;
+  cursor:      pointer;
+}
+
+input, select, textarea {
+  font-family: v.$font-sans;
+}
+
+// ---------------------------------------------------------------------------
+// Layout shell
+// ---------------------------------------------------------------------------
+
+.main-content {
+  max-width:  v.$max-width;
+  margin:     0 auto;
+  padding:    v.$space-8 v.$space-6;
+  min-height: calc(100vh - v.$nav-height);
+}
+
+// ---------------------------------------------------------------------------
+// Scrollbar
+// ---------------------------------------------------------------------------
+
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: v.$off-white; }
+::-webkit-scrollbar-thumb {
+  background:    v.$border;
+  border-radius: 3px;
+  &:hover { background: v.$text-muted; }
+}
+
+// ---------------------------------------------------------------------------
+// ngx-charts global overrides
+// ---------------------------------------------------------------------------
+
+.ngx-charts {
+  text {
+    font-family: v.$font-sans !important;
+    fill:        v.$text-secondary !important;
+    font-size:   v.$text-xs !important;
+  }
+
+  .gridline-path {
+    stroke: v.$border-light !important;
+  }
+
+  .line-series .line {
+    stroke-width: 2px;
+  }
+
+  .tooltip-anchor { fill: v.$teal; }
+}

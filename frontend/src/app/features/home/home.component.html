@@ -1,0 +1,51 @@
+<div class="home-page">
+  <div class="home-hero">
+    <h1 class="home-title">Perpetual Wealth</h1>
+    <p class="home-tagline">
+      What does it take to never work again — mathematically?
+    </p>
+  </div>
+
+  <div class="home-body">
+    <p>
+      Perpetual Wealth is a precision financial modelling tool that answers a
+      deceptively simple question: given your spending, your investment returns,
+      your tax rate, and inflation, how much initial wealth do you need so that
+      your portfolio sustains you indefinitely — with net wealth neither growing
+      nor shrinking?
+    </p>
+    <p>
+      Unlike rule-of-thumb calculators, this tool uses exact symbolic
+      mathematics. The real after-tax return rate is computed precisely as
+      <em>r = (1 + i(1 − T)) / (1 + π) − 1</em>, not approximated. Closed-form
+      solutions to the governing differential equations give you exact wealth
+      trajectories over time. Sensitivity analysis tells you, to the dollar,
+      how much each variable affects your required initial wealth.
+    </p>
+    <p>
+      Choose a mode below to begin. Deterministic models give exact answers
+      under fixed assumptions. Stochastic models — coming soon — will introduce
+      randomness to return rates and simulate probability distributions of
+      outcomes.
+    </p>
+  </div>
+
+  <div class="home-cards">
+    <a class="mode-card" routerLink="/deterministic">
+      <h2>Deterministic</h2>
+      <p>
+        Fixed parameters, exact closed-form solutions. Four tiers of increasing
+        complexity — from constant consumption to welfare reinvestment.
+      </p>
+      <span class="card-cta">Explore →</span>
+    </a>
+    <a class="mode-card mode-card--coming-soon" routerLink="/stochastic">
+      <h2>Stochastic</h2>
+      <p>
+        Probabilistic return rates, Monte Carlo trajectories, and ruin
+        probability analysis. Coming soon.
+      </p>
+      <span class="card-cta">Learn more →</span>
+    </a>
+  </div>
+</div>

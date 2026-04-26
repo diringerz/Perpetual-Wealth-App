@@ -1,0 +1,113 @@
+@use '../../../styles/variables' as v;
+@use '../../../styles/mixins' as m;
+
+.home-page {
+  max-width: 900px;
+  margin:    0 auto;
+}
+
+.home-hero {
+  text-align:    center;
+  padding:       v.$space-16 0 v.$space-10;
+  border-bottom: 1px solid v.$border-light;
+  margin-bottom: v.$space-10;
+}
+
+.home-title {
+  font-size:      v.$text-4xl;
+  font-weight:    v.$weight-bold;
+  color:          v.$navy;
+  letter-spacing: -0.02em;
+  margin-bottom:  v.$space-4;
+}
+
+.home-tagline {
+  font-size:   v.$text-xl;
+  color:       v.$text-secondary;
+  font-weight: v.$weight-normal;
+  max-width:   560px;
+  margin:      0 auto;
+  line-height: v.$leading-relaxed;
+}
+
+.home-body {
+  margin-bottom: v.$space-10;
+
+  p {
+    font-size:     v.$text-base;
+    color:         v.$text-secondary;
+    line-height:   v.$leading-relaxed;
+    margin-bottom: v.$space-4;
+    max-width:     720px;
+
+    em {
+      font-family: v.$font-mono;
+      font-style:  normal;
+      color:       v.$teal;
+      font-size:   0.9em;
+      background:  v.$teal-faint;
+      padding:     2px 6px;
+      border-radius: 4px;
+    }
+
+    &:last-child { margin-bottom: 0; }
+  }
+}
+
+.home-cards {
+  display:               grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap:                   v.$space-6;
+}
+
+.mode-card {
+  @include m.card;
+  @include m.card-hover;
+  display:        flex;
+  flex-direction: column;
+  gap:            v.$space-3;
+  padding:        v.$space-8;
+  text-decoration:none;
+  border-top:     3px solid v.$navy;
+  transition:     box-shadow v.$transition-normal,
+                  border-color v.$transition-normal,
+                  transform v.$transition-normal;
+
+  &:hover {
+    border-top-color: v.$teal;
+    transform:        translateY(-2px);
+  }
+
+  h2 {
+    font-size:  v.$text-xl;
+    color:      v.$navy;
+    margin:     0;
+  }
+
+  p {
+    font-size:   v.$text-sm;
+    color:       v.$text-secondary;
+    line-height: v.$leading-relaxed;
+    margin:      0;
+    flex:        1;
+  }
+
+  .card-cta {
+    font-size:   v.$text-sm;
+    font-weight: v.$weight-semi;
+    color:       v.$teal;
+    margin-top:  v.$space-2;
+  }
+
+  &--coming-soon {
+    border-top-color: v.$border;
+    opacity:          0.75;
+
+    &:hover {
+      border-top-color: v.$border;
+      transform:        none;
+    }
+
+    h2 { color: v.$text-secondary; }
+  }
+}

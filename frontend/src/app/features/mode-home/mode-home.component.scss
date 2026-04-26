@@ -1,0 +1,106 @@
+@use '../../../styles/variables' as v;
+@use '../../../styles/mixins' as m;
+
+.mode-home {
+  max-width: 960px;
+}
+
+.mode-hero {
+  @include m.page-header;
+  position: relative;
+
+  h1 { color: v.$navy; }
+}
+
+.coming-soon-badge {
+  @include m.badge(v.$warning-faint, v.$warning);
+  margin-top: v.$space-3;
+  display:    inline-block;
+}
+
+.mode-description {
+  margin-bottom: v.$space-8;
+
+  p {
+    font-size:     v.$text-base;
+    color:         v.$text-secondary;
+    line-height:   v.$leading-relaxed;
+    margin-bottom: v.$space-4;
+    max-width:     720px;
+
+    &:last-child { margin-bottom: 0; }
+  }
+}
+
+.mode-grid {
+  display:               grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap:                   v.$space-6;
+  margin-bottom:         v.$space-10;
+}
+
+.mode-section {
+  @include m.card;
+
+  h2 {
+    font-size:     v.$text-base;
+    font-weight:   v.$weight-semi;
+    color:         v.$navy;
+    margin-bottom: v.$space-4;
+    padding-bottom:v.$space-2;
+    border-bottom: 2px solid v.$border-light;
+  }
+
+  ul {
+    display:        flex;
+    flex-direction: column;
+    gap:            v.$space-2;
+  }
+
+  li {
+    font-size:   v.$text-sm;
+    color:       v.$text-secondary;
+    line-height: v.$leading-relaxed;
+    padding-left:v.$space-4;
+    position:    relative;
+
+    &::before {
+      content:    '—';
+      position:   absolute;
+      left:       0;
+      color:      v.$teal;
+      font-weight:v.$weight-bold;
+    }
+  }
+}
+
+.mode-links {
+  h2 {
+    @include m.section-heading;
+  }
+}
+
+.link-grid {
+  display:               grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap:                   v.$space-3;
+}
+
+.link-card {
+  @include m.card;
+  @include m.card-hover;
+  display:     block;
+  font-size:   v.$text-sm;
+  font-weight: v.$weight-medium;
+  color:       v.$navy;
+  padding:     v.$space-4 v.$space-5;
+  border-left: 3px solid v.$teal;
+  transition:  box-shadow v.$transition-normal,
+               background v.$transition-normal,
+               color v.$transition-normal;
+
+  &:hover {
+    background: v.$teal-faint;
+    color:      v.$teal;
+  }
+}

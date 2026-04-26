@@ -1,0 +1,81 @@
+// ---------------------------------------------------------------------------
+// Design tokens — single source of truth for all component styles
+// ---------------------------------------------------------------------------
+
+// Colors
+$navy:          #0f2d4a;
+$navy-light:    #1a4068;
+$navy-lighter:  #2a5a8a;
+$teal:          #0e7c7b;
+$teal-light:    #12a09e;
+$teal-faint:    #e6f4f4;
+
+$white:         #ffffff;
+$off-white:     #f7f8fa;
+$surface:       #ffffff;
+$surface-alt:   #f0f3f7;
+
+$text-primary:  #0f1f2e;
+$text-secondary:#4a5568;
+$text-muted:    #8898a8;
+$text-on-navy:  #e8eef4;
+
+$border:        #d4dce6;
+$border-light:  #eaeff5;
+
+$danger:        #c0392b;
+$danger-faint:  #fdf0ef;
+$warning:       #b7791f;
+$warning-faint: #fffbeb;
+$success:       #1a7a4a;
+$success-faint: #edfaf3;
+
+// Typography
+$font-sans:     'Inter', 'Segoe UI', system-ui, sans-serif;
+$font-mono:     'JetBrains Mono', 'Fira Code', 'Courier New', monospace;
+
+$text-xs:       0.75rem;
+$text-sm:       0.875rem;
+$text-base:     1rem;
+$text-lg:       1.125rem;
+$text-xl:       1.25rem;
+$text-2xl:      1.5rem;
+$text-3xl:      1.875rem;
+$text-4xl:      2.25rem;
+
+$weight-normal: 400;
+$weight-medium: 500;
+$weight-semi:   600;
+$weight-bold:   700;
+
+$leading-tight:  1.25;
+$leading-normal: 1.5;
+$leading-relaxed:1.625;
+
+// Spacing
+$space-1:  0.25rem;
+$space-2:  0.5rem;
+$space-3:  0.75rem;
+$space-4:  1rem;
+$space-5:  1.25rem;
+$space-6:  1.5rem;
+$space-8:  2rem;
+$space-10: 2.5rem;
+$space-12: 3rem;
+$space-16: 4rem;
+
+// Layout
+$max-width:      1280px;
+$nav-height:     60px;
+$card-radius:    8px;
+$input-radius:   6px;
+$badge-radius:   4px;
+
+// Shadows
+$shadow-sm:   0 1px 3px rgba(15, 45, 74, 0.08);
+$shadow-md:   0 4px 12px rgba(15, 45, 74, 0.10);
+$shadow-lg:   0 8px 24px rgba(15, 45, 74, 0.12);
+
+// Transitions
+$transition-fast:   150ms ease;
+$transition-normal: 250ms ease;

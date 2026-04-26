@@ -1,0 +1,215 @@
+@use 'variables' as v;
+
+// ---------------------------------------------------------------------------
+// Mixins
+// ---------------------------------------------------------------------------
+
+@mixin card {
+  background:    v.$surface;
+  border:        1px solid v.$border-light;
+  border-radius: v.$card-radius;
+  box-shadow:    v.$shadow-sm;
+  padding:       v.$space-6;
+}
+
+@mixin card-hover {
+  transition: box-shadow v.$transition-normal, border-color v.$transition-normal;
+  &:hover {
+    box-shadow:    v.$shadow-md;
+    border-color:  v.$border;
+  }
+}
+
+@mixin btn-base {
+  display:         inline-flex;
+  align-items:     center;
+  justify-content: center;
+  gap:             v.$space-2;
+  padding:         v.$space-2 v.$space-5;
+  border-radius:   v.$input-radius;
+  font-size:       v.$text-sm;
+  font-weight:     v.$weight-medium;
+  cursor:          pointer;
+  transition:      background v.$transition-fast, color v.$transition-fast,
+                   border-color v.$transition-fast, box-shadow v.$transition-fast;
+  border:          1px solid transparent;
+  line-height:     1;
+  white-space:     nowrap;
+
+  &:disabled {
+    opacity: 0.5;
+    cursor:  not-allowed;
+  }
+}
+
+@mixin btn-primary {
+  @include btn-base;
+  background:  v.$teal;
+  color:       v.$white;
+  border-color:v.$teal;
+
+  &:hover:not(:disabled) {
+    background:   v.$teal-light;
+    border-color: v.$teal-light;
+  }
+
+  &:active:not(:disabled) {
+    background: v.$teal;
+  }
+}
+
+@mixin btn-secondary {
+  @include btn-base;
+  background:   v.$white;
+  color:        v.$navy;
+  border-color: v.$border;
+
+  &:hover:not(:disabled) {
+    background:   v.$surface-alt;
+    border-color: v.$navy-lighter;
+  }
+}
+
+@mixin input-base {
+  width:         100%;
+  padding:       v.$space-2 v.$space-3;
+  border:        1px solid v.$border;
+  border-radius: v.$input-radius;
+  font-size:     v.$text-sm;
+  color:         v.$text-primary;
+  background:    v.$white;
+  transition:    border-color v.$transition-fast, box-shadow v.$transition-fast;
+  outline:       none;
+
+  &:focus {
+    border-color: v.$teal;
+    box-shadow:   0 0 0 3px rgba(14, 124, 123, 0.12);
+  }
+
+  &::placeholder {
+    color: v.$text-muted;
+  }
+}
+
+@mixin label-base {
+  display:       block;
+  font-size:     v.$text-sm;
+  font-weight:   v.$weight-medium;
+  color:         v.$text-secondary;
+  margin-bottom: v.$space-1;
+}
+
+@mixin section-heading {
+  font-size:     v.$text-xl;
+  font-weight:   v.$weight-semi;
+  color:         v.$text-primary;
+  margin-bottom: v.$space-4;
+  padding-bottom:v.$space-2;
+  border-bottom: 2px solid v.$border-light;
+}
+
+@mixin page-header {
+  margin-bottom: v.$space-8;
+
+  h1 {
+    font-size:   v.$text-3xl;
+    font-weight: v.$weight-bold;
+    color:       v.$navy;
+    margin:      0 0 v.$space-2;
+    line-height: v.$leading-tight;
+  }
+
+  .page-subtitle {
+    font-size:  v.$text-lg;
+    color:      v.$text-secondary;
+    margin:     0;
+    max-width:  680px;
+    line-height:v.$leading-relaxed;
+  }
+}
+
+@mixin stat-card {
+  @include card;
+  display:        flex;
+  flex-direction: column;
+  gap:            v.$space-1;
+
+  .stat-label {
+    font-size:   v.$text-xs;
+    font-weight: v.$weight-medium;
+    color:       v.$text-muted;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .stat-value {
+    font-size:   v.$text-2xl;
+    font-weight: v.$weight-bold;
+    color:       v.$navy;
+    line-height: v.$leading-tight;
+
+    &.formula {
+      font-family: v.$font-mono;
+      font-size:   v.$text-sm;
+      color:       v.$teal;
+    }
+  }
+}
+
+@mixin table-base {
+  width:           100%;
+  border-collapse: collapse;
+  font-size:       v.$text-sm;
+
+  th {
+    background:    v.$off-white;
+    color:         v.$text-secondary;
+    font-weight:   v.$weight-semi;
+    text-align:    left;
+    padding:       v.$space-3 v.$space-4;
+    border-bottom: 2px solid v.$border;
+    white-space:   nowrap;
+  }
+
+  td {
+    padding:       v.$space-3 v.$space-4;
+    border-bottom: 1px solid v.$border-light;
+    color:         v.$text-primary;
+    vertical-align: top;
+    line-height:   v.$leading-relaxed;
+  }
+
+  tbody tr {
+    transition: background v.$transition-fast;
+    &:hover { background: v.$off-white; }
+    &:last-child td { border-bottom: none; }
+  }
+}
+
+@mixin badge($bg, $color) {
+  display:       inline-block;
+  padding:       v.$space-1 v.$space-2;
+  background:    $bg;
+  color:         $color;
+  border-radius: v.$badge-radius;
+  font-size:     v.$text-xs;
+  font-weight:   v.$weight-semi;
+  line-height:   1;
+}
+
+@mixin banner($bg, $border-color, $color) {
+  background:    $bg;
+  border:        1px solid $border-color;
+  border-left:   4px solid $border-color;
+  border-radius: v.$input-radius;
+  padding:       v.$space-3 v.$space-4;
+  color:         $color;
+  font-size:     v.$text-sm;
+  line-height:   v.$leading-relaxed;
+}
+
+@mixin responsive-grid($min: 280px) {
+  display:               grid;
+  grid-template-columns: repeat(auto-fill, minmax($min, 1fr));
+  gap:                   v.$space-6;
+}

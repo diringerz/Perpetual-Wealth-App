@@ -1,0 +1,60 @@
+@use '../../../../styles/variables' as v;
+@use '../../../../styles/mixins' as m;
+
+.satirical-page {
+  max-width: v.$max-width;
+}
+
+.page-header {
+  @include m.page-header;
+}
+
+.satirical-table-wrapper {
+  @include m.card;
+  padding:    0;
+  overflow-x: auto;
+}
+
+.satirical-table {
+  @include m.table-base;
+
+  th {
+  &:first-child  { min-width: 260px; }
+  &:nth-child(2) { min-width: 180px; }
+  &:nth-child(3) { min-width: 260px; }
+  &:last-child   { min-width: 260px; }
+}
+}
+
+.condition-cell {
+  code {
+    display:       block;
+    font-family:   v.$font-mono;
+    font-size:     v.$text-xs;
+    color:         v.$navy;
+    background:    v.$off-white;
+    padding:       v.$space-1 v.$space-2;
+    border-radius: v.$badge-radius;
+    margin-bottom: v.$space-2;
+    border:        1px solid v.$border-light;
+    white-space:   nowrap;
+  }
+}
+
+.formula-tag {
+  font-family: v.$font-mono;
+  font-size:   v.$text-xs;
+  color:       v.$teal;
+  line-height: v.$leading-relaxed;
+}
+
+.reality-cell {
+  color: v.$text-secondary;
+}
+
+.paradox-cell {
+  color:       v.$text-secondary;
+  font-style:  italic;
+  border-left: 3px solid v.$border-light;
+  padding-left:v.$space-4 !important;
+}

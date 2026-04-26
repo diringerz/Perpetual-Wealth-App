@@ -1,0 +1,51 @@
+<div class="mode-home" *ngIf="config">
+
+  <div class="mode-hero">
+    <h1>{{ config.title }}</h1>
+    <p class="mode-subtitle">{{ config.subtitle }}</p>
+    <div class="coming-soon-badge" *ngIf="config.comingSoon">Coming soon</div>
+  </div>
+
+  <div class="mode-description">
+    <p *ngFor="let para of config.description">{{ para }}</p>
+  </div>
+
+  <div class="mode-grid">
+
+    <div class="mode-section">
+      <h2>Assumptions</h2>
+      <ul>
+        <li *ngFor="let a of config.assumptions">{{ a }}</li>
+      </ul>
+    </div>
+
+    <div class="mode-section">
+      <h2>Use cases</h2>
+      <ul>
+        <li *ngFor="let u of config.useCases">{{ u }}</li>
+      </ul>
+    </div>
+
+    <div class="mode-section">
+      <h2>Key behaviors</h2>
+      <ul>
+        <li *ngFor="let b of config.behaviors">{{ b }}</li>
+      </ul>
+    </div>
+
+  </div>
+
+  <div class="mode-links" *ngIf="config.links.length > 0">
+    <h2>Jump to a model</h2>
+    <div class="link-grid">
+      <a
+        class="link-card"
+        *ngFor="let link of config.links"
+        [routerLink]="link.route"
+      >
+        {{ link.label }} →
+      </a>
+    </div>
+  </div>
+
+</div>

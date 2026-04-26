@@ -1,0 +1,35 @@
+<nav class="top-nav" (mouseleave)="closeMenu()">
+  <a class="nav-brand" routerLink="/">Perpetual Wealth</a>
+
+  <ul class="nav-list">
+    <li
+      class="nav-item"
+      *ngFor="let item of navItems"
+      (mouseenter)="toggleMenu(item.label)"
+    >
+      <a
+        class="nav-link"
+        [routerLink]="item.route"
+        routerLinkActive="nav-link--active"
+        [routerLinkActiveOptions]="{ exact: false }"
+      >
+        {{ item.label }}
+        <span class="chevron" [class.chevron--open]="openMenu === item.label">▾</span>
+      </a>
+
+      <ul class="dropdown" *ngIf="openMenu === item.label">
+        <li *ngFor="let child of item.children">
+          <a
+            class="dropdown-link"
+            [routerLink]="child.route"
+            routerLinkActive="dropdown-link--active"
+            [routerLinkActiveOptions]="{ exact: true }"
+            (click)="closeMenu()"
+          >
+            {{ child.label }}
+          </a>
+        </li>
+      </ul>
+    </li>
+  </ul>
+</nav>

@@ -1,0 +1,35 @@
+<div class="satirical-page">
+
+  <div class="page-header">
+    <h1>Satirical solutions</h1>
+    <p class="page-subtitle">
+      Mathematical conditions under which perpetual wealth is trivially achieved —
+      and why each one is an economic absurdity.
+    </p>
+  </div>
+
+  <div class="satirical-table-wrapper">
+    <table class="satirical-table">
+      <thead>
+        <tr>
+          <th>Condition</th>
+          <th>Formula result</th>
+          <th>Economic reality</th>
+          <th>The paradox</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let row of rows">
+          <td class="condition-cell">
+            <code>{{ row.condition }}</code>
+            <div class="formula-tag">{{ row.formula }}</div>
+          </td>
+          <td>{{ row.mathResult }}</td>
+          <td class="reality-cell">{{ row.realityCheck }}</td>
+          <td class="paradox-cell">{{ row.paradox }}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+</div>

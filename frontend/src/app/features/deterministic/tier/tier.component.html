@@ -1,0 +1,131 @@
+<div class="tier-page" *ngIf="tierConfig">
+  <!-- Header -->
+  <div class="page-header">
+    <h1>{{ tierConfig.label }}</h1>
+    <p class="page-subtitle">{{ tierConfig.description }}</p>
+  </div>
+
+  <!-- Parameter form -->
+  <div class="param-form-card">
+    <h2>Parameters</h2>
+    <div class="param-grid">
+      <div class="param-field" *ngFor="let v of formVariables">
+        <label [for]="v">
+          {{ getMeta(v).label }}
+          <span class="param-hint">{{ getMeta(v).description }}</span>
+        </label>
+        <div class="param-input-row">
+          <input
+            [id]="v"
+            type="number"
+            [min]="getDisplayMin(v)"
+            [max]="getDisplayMax(v)"
+            [step]="getDisplayStep(v)"
+            [(ngModel)]="displayParams[v]"
+          />
+          <span class="param-unit">{{ getMeta(v).unit }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Welfare inflation toggle — Tier 3 only -->
+    <div class="welfare-toggle" *ngIf="isTier3">
+      <label class="toggle-label">
+        <div class="toggle-track" [class.toggle-track--on]="welfareIndexed" (click)="onToggleWelfareIndexed()">
+          <div class="toggle-thumb"></div>
+        </div>
+        <div class="toggle-text">
+          <span class="toggle-title">Index welfare to inflation</span>
+          <span class="toggle-subtitle" [class.toggle-subtitle--warning]="!welfareIndexed">
+            {{ effectiveGLabel }}
+            <span *ngIf="!welfareIndexed"> — result valid at t = 0 only</span>
+          </span>
+        </div>
+      </label>
+    </div>
+
+    <!-- Action buttons -->
+    <div class="form-actions">
+      <button class="btn-solve" (click)="solve()" [disabled]="loading">
+        {{ loading ? 'Computing…' : 'Compute W₀' }}
+      </button>
+      <button class="btn-update-graphs" (click)="updateGraphs()" [disabled]="loading">
+        Update graphs
+      </button>
+    </div>
+  </div>
+
+  <!-- Result -->
+  <div class="result-card" *ngIf="result && !loading">
+
+    <div class="result-error" *ngIf="error">{{ error }}</div>
+
+    <div class="edge-case-banner" *ngIf="edgeCaseMessage()">
+      &#9888; {{ edgeCaseMessage() }}
+    </div>
+
+    <div class="result-stats" *ngIf="!isInfeasible()">
+      <div class="stat">
+        <span class="stat-label">Required initial wealth W&#8320;</span>
+        <span class="stat-value">{{ formatW0(result.W0) }}</span>
+      </div>
+      <div class="stat">
+        <span class="stat-label">Real return rate r</span>
+        <span class="stat-value">{{ formatPercent(result.r_real) }}</span>
+      </div>
+      <div class="stat">
+        <span class="stat-label">Formula</span>
+        <span class="stat-value formula">{{ result.W0_formula }}</span>
+      </div>
+      <div class="stat">
+        <span class="stat-label">r formula</span>
+        <span class="stat-value formula">{{ result.r_real_formula }}</span>
+      </div>
+    </div>
+
+    <!-- Sensitivity table -->
+    <div class="sensitivity-section" *ngIf="result.sensitivity.length">
+      <h3>Sensitivity at current parameters</h3>
+      <table class="sensitivity-table">
+        <thead>
+          <tr>
+            <th>Variable</th>
+            <th>&#8706;W&#8320;/&#8706;x</th>
+            <th>Elasticity</th>
+            <th>&#8706;&#178;W&#8320;/&#8706;x&#178;</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let s of result.sensitivity">
+            <td>{{ getMeta(s.variable).label }}</td>
+            <td>{{ s.dW0_dx | number:'1.0-0' }}</td>
+            <td>{{ s.elasticity | number:'1.4-4' }}</td>
+            <td>{{ s.d2W0_dx2 | number:'1.0-0' }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+  </div>
+
+  <!-- Per-variable sweep graphs -->
+  <div class="graphs-section" *ngIf="!isInfeasible()">
+    <h2>Marginal analysis</h2>
+    <p class="graphs-intro">
+      Each graph shows how required initial wealth W&#8320; changes as one variable
+      is swept across its range, holding all others constant at the snapshot below.
+      Click <strong>Update graphs</strong> to push current parameters to all graphs,
+      or use the Refresh button on each graph individually.
+    </p>
+    <div class="graphs-grid">
+      <app-sweep-graph
+        *ngFor="let v of sweepVariables; trackBy: trackByVar"
+        [sweepVar]="v"
+        [baseParams]="graphSnapshot"
+        [sweepRange]="getSweepRange(v)"
+        [tier]="tierConfig.tier"
+      ></app-sweep-graph>
+    </div>
+  </div>
+
+</div>

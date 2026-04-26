@@ -1,0 +1,248 @@
+@use '../../../../styles/variables' as v;
+@use '../../../../styles/mixins' as m;
+
+.tier-page {
+  max-width: v.$max-width;
+}
+
+.page-header {
+  @include m.page-header;
+}
+
+// ---------------------------------------------------------------------------
+// Parameter form
+// ---------------------------------------------------------------------------
+
+.param-form-card {
+  @include m.card;
+  margin-bottom: v.$space-6;
+
+  h2 {
+    @include m.section-heading;
+  }
+}
+
+.param-grid {
+  display:               grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap:                   v.$space-5;
+  margin-bottom:         v.$space-6;
+}
+
+.param-field {
+  display:        flex;
+  flex-direction: column;
+  gap:            v.$space-1;
+
+  label {
+    @include m.label-base;
+  }
+
+  .param-hint {
+    display:     block;
+    font-size:   v.$text-xs;
+    color:       v.$text-muted;
+    font-weight: v.$weight-normal;
+    margin-top:  v.$space-1;
+    line-height: v.$leading-relaxed;
+  }
+}
+
+.param-input-row {
+  display:     flex;
+  align-items: center;
+  gap:         v.$space-2;
+
+  input {
+    @include m.input-base;
+    flex: 1;
+  }
+
+  .param-unit {
+    font-size:   v.$text-sm;
+    color:       v.$text-muted;
+    font-weight: v.$weight-medium;
+    min-width:   24px;
+    flex-shrink: 0;
+  }
+}
+
+.btn-solve {
+  @include m.btn-primary;
+  padding: v.$space-3 v.$space-8;
+  font-size: v.$text-base;
+}
+
+// ---------------------------------------------------------------------------
+// Result card
+// ---------------------------------------------------------------------------
+
+.result-card {
+  @include m.card;
+  margin-bottom: v.$space-6;
+}
+
+.result-error {
+  @include m.banner(v.$danger-faint, v.$danger, v.$danger);
+  margin-bottom: v.$space-4;
+}
+
+.edge-case-banner {
+  @include m.banner(v.$warning-faint, v.$warning, v.$warning);
+  margin-bottom: v.$space-4;
+}
+
+.result-stats {
+  display:               grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap:                   v.$space-4;
+  margin-bottom:         v.$space-6;
+
+  .stat {
+    @include m.stat-card;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Sensitivity table
+// ---------------------------------------------------------------------------
+
+.sensitivity-section {
+  h3 {
+    font-size:     v.$text-base;
+    font-weight:   v.$weight-semi;
+    color:         v.$text-secondary;
+    margin-bottom: v.$space-3;
+    text-transform:uppercase;
+    letter-spacing:0.05em;
+    font-size:     v.$text-xs;
+  }
+}
+
+.sensitivity-table {
+  @include m.table-base;
+
+  td:not(:first-child) {
+    font-family: v.$font-mono;
+    font-size:   v.$text-xs;
+    color:       v.$navy;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Graphs section
+// ---------------------------------------------------------------------------
+
+.graphs-section {
+  h2 {
+    @include m.section-heading;
+  }
+}
+
+.graphs-intro {
+  font-size:     v.$text-sm;
+  color:         v.$text-secondary;
+  margin-bottom: v.$space-6;
+  max-width:     680px;
+  line-height:   v.$leading-relaxed;
+}
+
+.graphs-grid {
+  display:               grid;
+  grid-template-columns: repeat(auto-fill, minmax(480px, 1fr));
+  gap:                   v.$space-6;
+}
+
+// ---------------------------------------------------------------------------
+// Welfare inflation toggle
+// ---------------------------------------------------------------------------
+
+.welfare-toggle {
+  margin-bottom: v.$space-5;
+  padding:       v.$space-4;
+  background:    v.$off-white;
+  border:        1px solid v.$border-light;
+  border-radius: v.$input-radius;
+}
+
+.toggle-label {
+  display:     flex;
+  align-items: center;
+  gap:         v.$space-3;
+  cursor:      pointer;
+}
+
+.toggle-track {
+  position:      relative;
+  width:         44px;
+  height:        24px;
+  border-radius: 12px;
+  background:    v.$border;
+  flex-shrink:   0;
+  transition:    background v.$transition-fast;
+  cursor:        pointer;
+
+  &--on {
+    background: v.$teal;
+
+    .toggle-thumb {
+      transform: translateX(20px);
+    }
+  }
+}
+
+.toggle-thumb {
+  position:      absolute;
+  top:           3px;
+  left:          3px;
+  width:         18px;
+  height:        18px;
+  border-radius: 50%;
+  background:    v.$white;
+  box-shadow:    v.$shadow-sm;
+  transition:    transform v.$transition-fast;
+}
+
+.toggle-text {
+  display:        flex;
+  flex-direction: column;
+  gap:            v.$space-1;
+}
+
+.toggle-title {
+  font-size:   v.$text-sm;
+  font-weight: v.$weight-medium;
+  color:       v.$text-primary;
+}
+
+.toggle-subtitle {
+  font-size:   v.$text-xs;
+  color:       v.$teal;
+  font-family: v.$font-mono;
+
+  &--warning {
+    color: v.$warning;
+  }
+}
+
+.form-actions {
+  display: flex;
+  gap: v.$space-3;
+  align-items: center;
+}
+
+.btn-update-graphs {
+  @include m.btn-secondary;
+  padding: v.$space-3 v.$space-6;
+  font-size: v.$text-base;
+}
+
+.graph-placeholder {
+  @include m.card;
+  height: 280px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: v.$text-muted;
+  font-size: v.$text-sm;
+}
