@@ -17,6 +17,15 @@ import {
   SweepVariable, SweepRange, VariableMeta,
 } from '../../../shared/models/wealth.models';
 
+export interface RankedFactor {
+  variable:      SweepVariable;
+  label:         string;
+  elasticity:    number;
+  absElasticity: number;
+  direction:     'increases' | 'decreases';
+  plain:         string;
+}
+
 @Component({
   selector:        'app-tier',
   standalone:      true,
@@ -33,18 +42,24 @@ export class TierComponent implements OnInit, OnDestroy {
   params!: WealthParams;
 
   // Display params scaled x100 for rate inputs (e.g. 25%).
-  // ngModel binds to this; toDecimal() converts before any API call.
   displayParams!: Record<SweepVariable, number>;
 
   // Frozen snapshot passed to child graphs.
-  // Only updates when the user explicitly clicks "Update graphs".
-  graphSnapshot!: WealthParams;
+  // Only set when the user explicitly clicks "Load graphs" or "Update graphs".
+  graphSnapshot: WealthParams | null = null;
 
-  result:  SolveResponse | null = null;
-  loading  = false;
-  error:   string | null = null;
+  // Controls whether the graphs section is rendered at all.
+  // false on page load — graphs only render after explicit user action.
+  graphsVisible = false;
 
-  // Welfare inflation toggle — Tier 3 only.
+  // Per-variable refresh triggers for subsequent updates after initial load.
+  refreshTriggers: Record<string, number> = {};
+
+  result:        SolveResponse | null = null;
+  rankedFactors: RankedFactor[]       = [];
+  loading        = false;
+  error:         string | null        = null;
+
   welfareIndexed = false;
 
   sweepRanges!: Record<SweepVariable, SweepRange>;
@@ -67,17 +82,16 @@ export class TierComponent implements OnInit, OnDestroy {
     const tier      = this.route.snapshot.data['tier'] as number;
     this.tierConfig = this.defaults.tierConfigs[tier];
 
-    // Guard: if this tier was removed from tierConfigs, stop cleanly.
     if (!this.tierConfig) {
       this.error = `Tier ${tier} is not available.`;
       return;
     }
 
     this.params        = { ...this.defaults.defaultParams };
-    this.graphSnapshot = { ...this.params };
     this.sweepRanges   = { ...this.defaults.sweepRangeDefaults };
     this.displayParams = this.toDisplay(this.params);
-    // Only run API calls in the browser — SSR has no HTTP context
+    this.sweepVariables.forEach(v => this.refreshTriggers[v] = 0);
+
     if (isPlatformBrowser(this.platformId)) {
       this.solve();
     }
@@ -88,7 +102,7 @@ export class TierComponent implements OnInit, OnDestroy {
   }
 
   // ---------------------------------------------------------------------------
-  // Effective params — resolves g before any API call
+  // Effective params
   // ---------------------------------------------------------------------------
 
   get effectiveParams(): WealthParams {
@@ -100,7 +114,7 @@ export class TierComponent implements OnInit, OnDestroy {
   }
 
   // ---------------------------------------------------------------------------
-  // Solve
+  // Solve — never touches graphSnapshot or graphsVisible
   // ---------------------------------------------------------------------------
 
   solve(): void {
@@ -108,14 +122,16 @@ export class TierComponent implements OnInit, OnDestroy {
     this.loading = true;
     this.error   = null;
     this.params  = this.effectiveParams;
+
     this.solveSub = this.api.solve({
       params:    this.params,
       t_horizon: this.defaults.defaultHorizon,
       tier:      this.tierConfig.tier,
     }).subscribe({
       next: (res) => {
-        this.result  = res;
-        this.loading = false;
+        this.result        = res;
+        this.rankedFactors = this.buildRankedFactors(res);
+        this.loading       = false;
         this.cdr.detectChanges();
       },
       error: () => {
@@ -126,14 +142,63 @@ export class TierComponent implements OnInit, OnDestroy {
     });
   }
 
-  // Explicit user action — pushes current params to graphs and triggers re-fetch
+  // First time — renders graphs with current params
+  loadGraphs(): void {
+    this.graphSnapshot = { ...this.effectiveParams };
+    this.graphsVisible = true;
+    this.sweepVariables.forEach(v => this.refreshTriggers[v] = 0);
+  }
+
+  // Subsequent updates — pushes new params to already-rendered graphs one at a time
   updateGraphs(): void {
-    this.graphSnapshot = { ...this.params };
+    if (!this.graphsVisible) {
+      this.loadGraphs();
+      return;
+    }
+    this.graphSnapshot = { ...this.effectiveParams };
+    this.sweepVariables.forEach((v, index) => {
+      requestAnimationFrame(() => {
+        setTimeout(() => {
+          this.refreshTriggers = {
+            ...this.refreshTriggers,
+            [v]: (this.refreshTriggers[v] ?? 0) + 1,
+          };
+        }, index * 400);
+      });
+    });
   }
 
   onToggleWelfareIndexed(): void {
     this.welfareIndexed = !this.welfareIndexed;
     this.solve();
+  }
+
+  // ---------------------------------------------------------------------------
+  // Ranked factors
+  // ---------------------------------------------------------------------------
+
+  private buildRankedFactors(res: SolveResponse): RankedFactor[] {
+    if (!res.sensitivity?.length || !res.W0) return [];
+
+    return res.sensitivity
+      .filter(s => isFinite(s.elasticity) && !isNaN(s.elasticity)
+                   && Math.abs(s.elasticity) > 0.0001)
+      .map(s => {
+        const meta      = this.defaults.variableMeta[s.variable];
+        const direction = s.elasticity > 0 ? 'increases' : 'decreases';
+        const pct       = Math.abs(s.elasticity * 100).toFixed(1);
+        const plain     = `A 1% increase in ${meta.label.toLowerCase()} `
+                        + `${direction} required wealth by ${pct}%`;
+        return {
+          variable:      s.variable,
+          label:         meta.label,
+          elasticity:    s.elasticity,
+          absElasticity: Math.abs(s.elasticity),
+          direction,
+          plain,
+        } as RankedFactor;
+      })
+      .sort((a, b) => b.absElasticity - a.absElasticity);
   }
 
   // ---------------------------------------------------------------------------
@@ -170,7 +235,6 @@ export class TierComponent implements OnInit, OnDestroy {
     return this.tierConfig?.tier === 3;
   }
 
-  // g excluded for Tier 3 — controlled by toggle, not a free input
   get formVariables(): SweepVariable[] {
     return this.isTier3
       ? this.tierConfig.variables.filter(v => v !== 'g')

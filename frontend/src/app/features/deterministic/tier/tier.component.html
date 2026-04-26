@@ -1,4 +1,5 @@
 <div class="tier-page" *ngIf="tierConfig">
+
   <!-- Header -->
   <div class="page-header">
     <h1>{{ tierConfig.label }}</h1>
@@ -50,7 +51,7 @@
         {{ loading ? 'Computing…' : 'Compute W₀' }}
       </button>
       <button class="btn-update-graphs" (click)="updateGraphs()" [disabled]="loading">
-        Update graphs
+        {{ graphsVisible ? 'Update graphs' : 'Load graphs' }}
       </button>
     </div>
   </div>
@@ -83,49 +84,75 @@
       </div>
     </div>
 
-    <!-- Sensitivity table -->
-    <div class="sensitivity-section" *ngIf="result.sensitivity.length">
-      <h3>Sensitivity at current parameters</h3>
-      <table class="sensitivity-table">
-        <thead>
-          <tr>
-            <th>Variable</th>
-            <th>&#8706;W&#8320;/&#8706;x</th>
-            <th>Elasticity</th>
-            <th>&#8706;&#178;W&#8320;/&#8706;x&#178;</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let s of result.sensitivity">
-            <td>{{ getMeta(s.variable).label }}</td>
-            <td>{{ s.dW0_dx | number:'1.0-0' }}</td>
-            <td>{{ s.elasticity | number:'1.4-4' }}</td>
-            <td>{{ s.d2W0_dx2 | number:'1.0-0' }}</td>
-          </tr>
-        </tbody>
-      </table>
+    <!-- Ranked sensitivity factors -->
+    <div class="sensitivity-section" *ngIf="rankedFactors.length">
+      <h3>What matters most</h3>
+      <p class="sensitivity-intro">
+        Ranked by how much a 1% change in each variable affects your required wealth.
+      </p>
+      <div class="factor-list">
+        <div class="factor-row" *ngFor="let f of rankedFactors; let i = index">
+          <div class="factor-rank">{{ i + 1 }}</div>
+          <div class="factor-body">
+            <div class="factor-header">
+              <span class="factor-label">{{ f.label }}</span>
+              <span
+                class="factor-badge"
+                [class.factor-badge--increases]="f.direction === 'increases'"
+                [class.factor-badge--decreases]="f.direction === 'decreases'"
+              >
+                {{ f.direction === 'increases' ? '▲ increases W₀' : '▼ decreases W₀' }}
+              </span>
+            </div>
+            <p class="factor-plain">{{ f.plain }}</p>
+          </div>
+          <div class="factor-bar-wrap">
+            <div
+              class="factor-bar"
+              [class.factor-bar--decreases]="f.direction === 'decreases'"
+              [style.width.%]="(f.absElasticity / rankedFactors[0].absElasticity) * 100"
+            ></div>
+          </div>
+        </div>
+      </div>
     </div>
 
   </div>
 
-  <!-- Per-variable sweep graphs -->
+  <!-- Graphs section -->
   <div class="graphs-section" *ngIf="!isInfeasible()">
     <h2>Marginal analysis</h2>
-    <p class="graphs-intro">
-      Each graph shows how required initial wealth W&#8320; changes as one variable
-      is swept across its range, holding all others constant at the snapshot below.
-      Click <strong>Update graphs</strong> to push current parameters to all graphs,
-      or use the Refresh button on each graph individually.
-    </p>
-    <div class="graphs-grid">
-      <app-sweep-graph
-        *ngFor="let v of sweepVariables; trackBy: trackByVar"
-        [sweepVar]="v"
-        [baseParams]="graphSnapshot"
-        [sweepRange]="getSweepRange(v)"
-        [tier]="tierConfig.tier"
-      ></app-sweep-graph>
+
+    <!-- Not yet loaded — prompt the user -->
+    <div class="graphs-empty" *ngIf="!graphsVisible">
+      <p>
+        Adjust your parameters and click <strong>Load graphs</strong> to see
+        how required wealth responds to each variable.
+      </p>
+      <button class="btn-load-graphs" (click)="loadGraphs()">
+        Load graphs
+      </button>
     </div>
+
+    <!-- Graphs rendered — one per sweep variable -->
+    <ng-container *ngIf="graphsVisible && graphSnapshot">
+      <p class="graphs-intro">
+        Each graph shows how required initial wealth W&#8320; changes as one variable
+        is swept across its range, holding all others constant at the snapshot below.
+        Click <strong>Update graphs</strong> above to push new parameters,
+        or use the Refresh button on each graph individually.
+      </p>
+      <div class="graphs-grid">
+        <app-sweep-graph
+          *ngFor="let v of sweepVariables; trackBy: trackByVar"
+          [sweepVar]="v"
+          [baseParams]="graphSnapshot"
+          [sweepRange]="getSweepRange(v)"
+          [tier]="tierConfig.tier"
+          [refreshTrigger]="refreshTriggers[v]"
+        ></app-sweep-graph>
+      </div>
+    </ng-container>
   </div>
 
 </div>

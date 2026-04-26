@@ -55,14 +55,16 @@ Chart.register(
   imports:         [CommonModule, FormsModule, BaseChartDirective],
   styleUrls:       ['./sweep-graph.component.scss'],
   templateUrl:     './sweep-graph.component.html',
-  changeDetection: ChangeDetectionStrategy.Default,
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class SweepGraphComponent implements OnInit, OnChanges, OnDestroy {
 
   @Input() sweepVar!:   SweepVariable;
   @Input() baseParams!: WealthParams;
   @Input() sweepRange!: SweepRange;
-  @Input() tier!:       number;
+  @Input() tier!:           number;
+  // Incremented by parent on "Update graphs" — triggers explicit re-fetch
+  @Input() refreshTrigger: number = 0;
 
   meta!:       VariableMeta;
   snapshot:    GraphSnapshot | null = null;
@@ -169,6 +171,11 @@ export class SweepGraphComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   ngOnChanges(changes: SimpleChanges): void {
+    // refreshTrigger incremented by parent — re-fetch with current baseParams
+    if (changes['refreshTrigger'] && !changes['refreshTrigger'].firstChange) {
+      this.fetch();
+      return;
+    }
     // baseParams changes come from graphSnapshot updates in the tier component.
     // We do NOT auto-fetch here — the user must click Refresh explicitly.
     // Only propagate sweepRange changes from the parent.
@@ -273,12 +280,12 @@ export class SweepGraphComponent implements OnInit, OnChanges, OnDestroy {
         this.asymptoteX = rawAsymptote !== undefined ? rawAsymptote : null;
 
         this.loading = false;
-        this.cdr.detectChanges();
+        this.cdr.markForCheck();
       },
       error: () => {
         this.error   = 'Failed to load sweep data. Please try again.';
         this.loading = false;
-        this.cdr.detectChanges();
+        this.cdr.markForCheck();
       },
     });
   }
