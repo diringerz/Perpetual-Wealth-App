@@ -12,7 +12,8 @@ build/
 # Environment
 .env
 .env.*
-
+.venv1/
+.backend/.venv1
 # Docker
 *.log
 
