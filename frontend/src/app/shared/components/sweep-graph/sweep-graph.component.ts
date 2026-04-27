@@ -153,6 +153,23 @@ export class SweepGraphComponent implements OnInit, OnChanges, OnDestroy {
   // Single subscription — cancelled and replaced on every fetch()
   private fetchSub?: Subscription;
 
+  // Dollar-amount variables — no x100 display conversion
+  private readonly rawVars = new Set<string>(['C0', 'S0']);
+
+  get isRateVar(): boolean {
+    return !this.rawVars.has(this.sweepVar);
+  }
+
+  // Convert internal decimal range value to display value
+  toDisplayVal(val: number): number {
+    return this.isRateVar ? +(val * 100).toPrecision(10) : val;
+  }
+
+  // Convert display value back to internal decimal
+  toInternalVal(val: number): number {
+    return this.isRateVar ? +(val / 100).toPrecision(10) : val;
+  }
+
   constructor(
     private api:      WealthApiService,
     private defaults: DefaultParamsService,
@@ -197,11 +214,11 @@ export class SweepGraphComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   onRangeMinChange(val: number): void {
-    this.localRange = { ...this.localRange, min: val };
+    this.localRange = { ...this.localRange, min: this.toInternalVal(val) };
   }
 
   onRangeMaxChange(val: number): void {
-    this.localRange = { ...this.localRange, max: val };
+    this.localRange = { ...this.localRange, max: this.toInternalVal(val) };
   }
 
   onNPointsChange(val: number): void {

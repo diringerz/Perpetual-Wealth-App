@@ -244,6 +244,7 @@
   display:               grid;
   grid-template-columns: repeat(auto-fill, minmax(480px, 1fr));
   gap:                   v.$space-6;
+  align-items:           stretch;
 }
 
 .graphs-empty {
@@ -357,4 +358,75 @@
   &--warning {
     color: v.$warning;
   }
+}
+.asymptote-warning {
+  @include m.banner(v.$warning-faint, v.$warning, v.$warning);
+  margin-top: v.$space-4;
+}
+
+.sensitivity-header {
+  display:         flex;
+  align-items:     center;
+  justify-content: space-between;
+  margin-bottom:   v.$space-3;
+
+  h3 {
+    margin-bottom: 0;  // override the h3 margin since flex handles spacing
+  }
+}
+
+.btn-sort-toggle {
+  @include m.btn-secondary;
+  font-size: v.$text-xs;
+  padding:   v.$space-1 v.$space-3;
+}
+
+
+// ---------------------------------------------------------------------------
+// Variable legend
+// ---------------------------------------------------------------------------
+
+.variable-legend {
+  @include m.card;
+  margin-bottom: v.$space-6;
+
+  h3 {
+    font-size:      v.$text-xs;
+    font-weight:    v.$weight-semi;
+    color:          v.$text-secondary;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom:  v.$space-4;
+  }
+}
+
+.legend-grid {
+  display:               grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap:                   v.$space-3;
+}
+
+.legend-item {
+  display:     flex;
+  align-items: baseline;
+  gap:         v.$space-2;
+}
+
+.legend-symbol {
+  font-family:  v.$font-mono;
+  font-size:    v.$text-sm;
+  font-weight:  v.$weight-bold;
+  color:        v.$navy;
+  min-width:    28px;
+  flex-shrink:  0;
+
+  math {
+    font-size: v.$text-sm;
+  }
+}
+
+.legend-desc {
+  font-size:   v.$text-sm;
+  color:       v.$text-secondary;
+  line-height: v.$leading-relaxed;
 }

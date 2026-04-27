@@ -66,30 +66,87 @@
     </div>
 
     <div class="result-stats" *ngIf="!isInfeasible()">
+
+      <!-- Required wealth -->
       <div class="stat">
         <span class="stat-label">Required initial wealth W&#8320;</span>
         <span class="stat-value">{{ formatW0(result.W0) }}</span>
       </div>
+
+      <!-- Real return rate -->
       <div class="stat">
         <span class="stat-label">Real return rate r</span>
         <span class="stat-value">{{ formatPercent(result.r_real) }}</span>
       </div>
-      <div class="stat">
-        <span class="stat-label">Formula</span>
-        <span class="stat-value formula">{{ result.W0_formula }}</span>
+
+      <!-- W0 formula as fraction -->
+      <div class="stat stat--formula">
+        <span class="stat-label">Initial Wealth Formula</span>
+        <div class="math-formula">
+          <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML">
+            <mrow>
+              <msub><mi>W</mi><mn>0</mn></msub>
+              <mo>=</mo>
+              <mfrac>
+                <msub><mi>C</mi><mn>0</mn></msub>
+                <mrow><mi>r</mi><mo>&#8722;</mo><mi>&#960;</mi></mrow>
+              </mfrac>
+              <mo>&#8722;</mo>
+              <mfrac>
+                <mrow><msub><mi>S</mi><mn>0</mn></msub><mo>(</mo><mn>1</mn><mo>&#8722;</mo><mi>T</mi><mo>)</mo></mrow>
+                <mrow><mi>r</mi><mo>&#8722;</mo><mi>g</mi></mrow>
+              </mfrac>
+            </mrow>
+          </math>
+        </div>
       </div>
-      <div class="stat">
-        <span class="stat-label">r formula</span>
-        <span class="stat-value formula">{{ result.r_real_formula }}</span>
+
+      <!-- r_real formula as fraction -->
+      <div class="stat stat--formula">
+        <span class="stat-label">Real Return Rate Formula</span>
+        <div class="math-formula">
+          <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML">
+            <mrow>
+              <msub><mi>r</mi><mtext>real</mtext></msub>
+              <mo>=</mo>
+              <mfrac>
+                <mrow><mn>1</mn><mo>+</mo><mi>i</mi><mo>(</mo><mn>1</mn><mo>&#8722;</mo><mi>T</mi><mo>)</mo></mrow>
+                <mrow><mn>1</mn><mo>+</mo><mi>&#960;</mi></mrow>
+              </mfrac>
+              <mo>&#8722;</mo>
+              <mn>1</mn>
+            </mrow>
+          </math>
+        </div>
       </div>
+
     </div>
 
-    <!-- Ranked sensitivity factors -->
-    <div class="sensitivity-section" *ngIf="rankedFactors.length">
-      <h3>What matters most</h3>
+    <!-- Asymptote proximity warning -->
+    <div class="asymptote-warning" *ngIf="nearAsymptote">
+      &#9888; Your real return rate is only
+      {{ formatPercent(result!.r_real - params.pi) }} above inflation.
+      Small parameter changes will have an outsized effect on required wealth.
+      Consider increasing your return rate or reducing inflation to move away
+      from the feasibility boundary.
+    </div>
+
+    <!-- Ranked sensitivity factors — hidden when near asymptote -->
+    <div class="sensitivity-section" *ngIf="rankedFactors.length && !nearAsymptote">
+
+      <div class="sensitivity-header">
+        <h3>What matters most</h3>
+        <button class="btn-sort-toggle" (click)="toggleSort()">
+          {{ sortByMagnitude ? 'Sort by raw value' : 'Sort by magnitude' }}
+        </button>
+      </div>
+
       <p class="sensitivity-intro">
-        Ranked by how much a 1% change in each variable affects your required wealth.
+        {{ sortByMagnitude
+          ? 'Sorted by largest absolute impact on required wealth. Rate of change is instantaneous at current parameter values.'
+          : 'Sorted by signed rate of change — factors that increase W₀ first, then factors that decrease it.' }}
       </p>
+
       <div class="factor-list">
         <div class="factor-row" *ngFor="let f of rankedFactors; let i = index">
           <div class="factor-rank">{{ i + 1 }}</div>
@@ -110,13 +167,71 @@
             <div
               class="factor-bar"
               [class.factor-bar--decreases]="f.direction === 'decreases'"
-              [style.width.%]="(f.absElasticity / rankedFactors[0].absElasticity) * 100"
+              [style.width.%]="(f.normalizedRate / rankedFactors[0].normalizedRate) * 100"
             ></div>
           </div>
         </div>
       </div>
     </div>
 
+  </div>
+
+
+  <!-- Variable legend -->
+  <div class="variable-legend" *ngIf="result && !loading">
+    <h3>Variable definitions</h3>
+    <div class="legend-grid">
+      <div class="legend-item">
+        <span class="legend-symbol">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <msub><mi>W</mi><mn>0</mn></msub>
+          </math>
+        </span>
+        <span class="legend-desc">Required initial wealth — the lump sum needed today</span>
+      </div>
+      <div class="legend-item">
+        <span class="legend-symbol"><math xmlns="http://www.w3.org/1998/Math/MathML"><mi>i</mi></math></span>
+        <span class="legend-desc">Nominal annual return rate on invested wealth</span>
+      </div>
+      <div class="legend-item">
+        <span class="legend-symbol"><math xmlns="http://www.w3.org/1998/Math/MathML"><mi>T</mi></math></span>
+        <span class="legend-desc">Marginal tax rate applied to investment income</span>
+      </div>
+      <div class="legend-item">
+        <span class="legend-symbol">
+          <math xmlns="http://www.w3.org/1998/Math/MathML"><mi>&#960;</mi></math>
+        </span>
+        <span class="legend-desc">Annual consumer price inflation rate</span>
+      </div>
+      <div class="legend-item">
+        <span class="legend-symbol">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <msub><mi>C</mi><mn>0</mn></msub>
+          </math>
+        </span>
+        <span class="legend-desc">Annual consumption — spending required at t = 0</span>
+      </div>
+      <div class="legend-item" *ngIf="isTier3">
+        <span class="legend-symbol">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <msub><mi>S</mi><mn>0</mn></msub>
+          </math>
+        </span>
+        <span class="legend-desc">Annual welfare or subsidy income at t = 0</span>
+      </div>
+      <div class="legend-item" *ngIf="isTier3">
+        <span class="legend-symbol"><math xmlns="http://www.w3.org/1998/Math/MathML"><mi>g</mi></math></span>
+        <span class="legend-desc">Annual growth rate of welfare income</span>
+      </div>
+      <div class="legend-item">
+        <span class="legend-symbol">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <msub><mi>r</mi><mtext>real</mtext></msub>
+          </math>
+        </span>
+        <span class="legend-desc">After-tax real return rate — net purchasing power gain per year</span>
+      </div>
+    </div>
   </div>
 
   <!-- Graphs section -->

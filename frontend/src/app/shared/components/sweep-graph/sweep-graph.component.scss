@@ -7,6 +7,8 @@
   flex-direction: column;
   gap:            v.$space-4;
   position:       relative;
+  height:         100%;         // stretch to match tallest card in grid row
+  box-sizing:     border-box;
 }
 
 // ---------------------------------------------------------------------------
@@ -130,19 +132,27 @@
 }
 
 // ---------------------------------------------------------------------------
-// Chart container
+// Chart wrapper (ng2-charts / Chart.js canvas)
 // ---------------------------------------------------------------------------
 
+.chart-wrapper {
+  position: relative;
+  width:    100%;
+  flex:     1;           // grow to fill remaining card height
+  min-height: 220px;     // never collapse below this
+
+  canvas {
+    display: block;
+    width:   100% !important;
+    height:  100% !important;
+  }
+}
+
+// Legacy container kept for reference — not used
 .chart-container {
   position: relative;
   width:    100%;
   height:   280px;
-
-  ngx-charts-line-chart {
-    display: block;
-    width:   100%;
-    height:  100%;
-  }
 }
 
 .asymptote-line {

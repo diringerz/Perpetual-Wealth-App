@@ -4,6 +4,7 @@ import {
   ChangeDetectorRef,
   PLATFORM_ID,
   Inject,
+  CUSTOM_ELEMENTS_SCHEMA,
 } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -18,12 +19,14 @@ import {
 } from '../../../shared/models/wealth.models';
 
 export interface RankedFactor {
-  variable:      SweepVariable;
-  label:         string;
-  elasticity:    number;
-  absElasticity: number;
-  direction:     'increases' | 'decreases';
-  plain:         string;
+  variable:       SweepVariable;
+  label:          string;
+  elasticity:     number;
+  absElasticity:  number;
+  normalizedRate: number;   // |dW0/dx| in per-percentage-point or per-dollar
+  signedRate:     number;   // signed — for raw value sort
+  direction:      'increases' | 'decreases';
+  plain:          string;
 }
 
 @Component({
@@ -33,6 +36,7 @@ export interface RankedFactor {
   changeDetection: ChangeDetectionStrategy.Default,
   styleUrls:       ['./tier.component.scss'],
   templateUrl:     './tier.component.html',
+  schemas:         [CUSTOM_ELEMENTS_SCHEMA],
 })
 export class TierComponent implements OnInit, OnDestroy {
 
@@ -49,7 +53,6 @@ export class TierComponent implements OnInit, OnDestroy {
   graphSnapshot: WealthParams | null = null;
 
   // Controls whether the graphs section is rendered at all.
-  // false on page load — graphs only render after explicit user action.
   graphsVisible = false;
 
   // Per-variable refresh triggers for subsequent updates after initial load.
@@ -60,7 +63,8 @@ export class TierComponent implements OnInit, OnDestroy {
   loading        = false;
   error:         string | null        = null;
 
-  welfareIndexed = false;
+  welfareIndexed  = false;
+  sortByMagnitude = true;   // true = largest absolute impact first, false = signed value
 
   sweepRanges!: Record<SweepVariable, SweepRange>;
 
@@ -114,7 +118,7 @@ export class TierComponent implements OnInit, OnDestroy {
   }
 
   // ---------------------------------------------------------------------------
-  // Solve — never touches graphSnapshot or graphsVisible
+  // Solve
   // ---------------------------------------------------------------------------
 
   solve(): void {
@@ -142,20 +146,18 @@ export class TierComponent implements OnInit, OnDestroy {
     });
   }
 
-  // First time — renders graphs with current params
   loadGraphs(): void {
-    this.graphSnapshot = { ...this.effectiveParams };
+    this.graphSnapshot = { ...this.params };
     this.graphsVisible = true;
     this.sweepVariables.forEach(v => this.refreshTriggers[v] = 0);
   }
 
-  // Subsequent updates — pushes new params to already-rendered graphs one at a time
   updateGraphs(): void {
     if (!this.graphsVisible) {
       this.loadGraphs();
       return;
     }
-    this.graphSnapshot = { ...this.effectiveParams };
+    this.graphSnapshot = { ...this.params };
     this.sweepVariables.forEach((v, index) => {
       requestAnimationFrame(() => {
         setTimeout(() => {
@@ -173,32 +175,75 @@ export class TierComponent implements OnInit, OnDestroy {
     this.solve();
   }
 
+  toggleSort(): void {
+    this.sortByMagnitude = !this.sortByMagnitude;
+    this.rankedFactors   = this.sortFactors([...this.rankedFactors]);
+  }
+
   // ---------------------------------------------------------------------------
   // Ranked factors
   // ---------------------------------------------------------------------------
 
+  private readonly isRate = (v: string) => !['C0', 'S0'].includes(v);
+
+  private sortFactors(factors: RankedFactor[]): RankedFactor[] {
+    return factors.sort((a, b) =>
+      this.sortByMagnitude
+        ? b.normalizedRate - a.normalizedRate   // largest absolute impact first
+        : b.signedRate - a.signedRate           // most positive first
+    );
+  }
+
   private buildRankedFactors(res: SolveResponse): RankedFactor[] {
     if (!res.sensitivity?.length || !res.W0) return [];
 
-    return res.sensitivity
+    const factors = res.sensitivity
       .filter(s => isFinite(s.elasticity) && !isNaN(s.elasticity)
                    && Math.abs(s.elasticity) > 0.0001)
       .map(s => {
-        const meta      = this.defaults.variableMeta[s.variable];
-        const direction = s.elasticity > 0 ? 'increases' : 'decreases';
-        const pct       = Math.abs(s.elasticity * 100).toFixed(1);
-        const plain     = `A 1% increase in ${meta.label.toLowerCase()} `
-                        + `${direction} required wealth by ${pct}%`;
+        const meta     = this.defaults.variableMeta[s.variable];
+        const sens     = res.sensitivity.find(r => r.variable === s.variable)!;
+        const currentX = this.params[s.variable as keyof WealthParams] as number;
+
+        // Normalize to comparable units:
+        // rate variables  → $ per percentage point (dW0/dx * 0.01)
+        // dollar variables → $ per dollar (dW0/dx as-is)
+        const signedRate     = this.isRate(s.variable) ? sens.dW0_dx * 0.01 : sens.dW0_dx;
+        const normalizedRate = Math.abs(signedRate);
+        const direction: 'increases' | 'decreases' = signedRate > 0 ? 'increases' : 'decreases';
+
+        let rateOfChange: string;
+        let unit: string;
+        let atValue: string;
+
+        if (this.isRate(s.variable)) {
+          const sign   = signedRate >= 0 ? '+' : '-';
+          rateOfChange = `${sign}$${Math.abs(Math.round(signedRate)).toLocaleString()}`;
+          unit         = '1%';
+          atValue      = `${(currentX * 100).toFixed(2)}%`;
+        } else {
+          const sign   = signedRate >= 0 ? '+' : '-';
+          rateOfChange = `${sign}$${Math.abs(signedRate).toFixed(2)}`;
+          unit         = '$1';
+          atValue      = `$${Math.round(currentX).toLocaleString()}`;
+        }
+
+        const plain = `Rate of change is ${rateOfChange} / ${unit} `
+                    + `when ${meta.label.toLowerCase()} = ${atValue} when all else is held constant.`;
+
         return {
-          variable:      s.variable,
-          label:         meta.label,
-          elasticity:    s.elasticity,
-          absElasticity: Math.abs(s.elasticity),
+          variable:       s.variable,
+          label:          meta.label,
+          elasticity:     s.elasticity,
+          absElasticity:  Math.abs(s.elasticity),
+          normalizedRate,
+          signedRate,
           direction,
           plain,
         } as RankedFactor;
-      })
-      .sort((a, b) => b.absElasticity - a.absElasticity);
+      });
+
+    return this.sortFactors(factors);
   }
 
   // ---------------------------------------------------------------------------
@@ -251,6 +296,12 @@ export class TierComponent implements OnInit, OnDestroy {
       return `g = pi = ${(pi * 100).toFixed(2)}%`;
     }
     return 'g = 0 (fixed nominal welfare)';
+  }
+
+  get nearAsymptote(): boolean {
+    if (!this.result || this.isInfeasible()) return false;
+    return (this.result.r_real - this.params.pi) < 0.005
+        && this.result.r_real > this.params.pi;
   }
 
   getDisplayMin(v: SweepVariable): number {

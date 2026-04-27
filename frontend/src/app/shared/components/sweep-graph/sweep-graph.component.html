@@ -29,10 +29,10 @@
       <label>Min {{ meta.unit }}</label>
       <input
         type="number"
-        [min]="meta.min"
-        [max]="localRange.max - meta.step"
-        [step]="meta.step"
-        [value]="localRange.min"
+        [min]="toDisplayVal(meta.min)"
+        [max]="toDisplayVal(localRange.max) - toDisplayVal(meta.step)"
+        [step]="toDisplayVal(meta.step)"
+        [value]="toDisplayVal(localRange.min)"
         (change)="onRangeMinChange(+$any($event.target).value)"
       />
     </div>
@@ -40,10 +40,10 @@
       <label>Max {{ meta.unit }}</label>
       <input
         type="number"
-        [min]="localRange.min + meta.step"
-        [max]="meta.max"
-        [step]="meta.step"
-        [value]="localRange.max"
+        [min]="toDisplayVal(localRange.min) + toDisplayVal(meta.step)"
+        [max]="toDisplayVal(meta.max)"
+        [step]="toDisplayVal(meta.step)"
+        [value]="toDisplayVal(localRange.max)"
         (change)="onRangeMaxChange(+$any($event.target).value)"
       />
     </div>
@@ -119,7 +119,7 @@
 
   </div>
 
-  <!-- Sensitivity at base -->
+  <!-- Sensitivity at base 
   <div class="sensitivity-panel" *ngIf="response?.sensitivity_at_base">
     <div class="sens-item">
       <span class="sens-label">∂W₀/∂{{ sweepVar }}</span>
@@ -139,6 +139,6 @@
         {{ response!.sensitivity_at_base.d2W0_dx2 | number:'1.0-0' }}
       </span>
     </div>
-  </div>
+  </div> -->
 
 </div>

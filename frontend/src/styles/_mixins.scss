@@ -133,6 +133,7 @@
   display:        flex;
   flex-direction: column;
   gap:            v.$space-1;
+  justify-content: center;
 
   .stat-label {
     font-size:   v.$text-xs;
@@ -140,6 +141,7 @@
     color:       v.$text-muted;
     text-transform: uppercase;
     letter-spacing: 0.05em;
+    justify-content: center;
   }
 
   .stat-value {

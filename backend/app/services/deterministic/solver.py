@@ -25,6 +25,7 @@ from app.solvers.symbolic import (
 
 _ZERO_TOLERANCE = 1e-10
 
+
 def _detect_edge_case(
     C0: float, i: float, T: float, pi: float,
     S0: float, g: float, r_real: float, tier: int,
@@ -41,11 +42,13 @@ def _detect_edge_case(
                 and g >= pi - _ZERO_TOLERANCE):
             return EdgeCase.welfare_covers_all
 
-        # g >= r_real with positive r_real — welfare PV is infinite
-        # but only meaningful when r_real > 0
+        # g >= r_real with positive r_real means welfare PV is infinite —
+        # but ONLY if welfare already covers consumption at t=0 in nominal terms.
+        # If S0*(1-T) < C0 there is still a gap on day one that requires
+        # initial wealth, so welfare_covers_all is wrong here.
         if (r_real > _ZERO_TOLERANCE
                 and g >= r_real - _ZERO_TOLERANCE
-                and S0 * (1 - T) > 0):
+                and S0 * (1 - T) >= C0 - _ZERO_TOLERANCE):
             return EdgeCase.welfare_covers_all
 
         # PV comparison — only valid when both denominators are positive
