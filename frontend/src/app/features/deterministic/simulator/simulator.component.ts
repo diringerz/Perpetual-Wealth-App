@@ -291,7 +291,22 @@ export class SimulatorComponent implements OnInit {
   // ---------------------------------------------------------------------------
 
   exportCsv(): void {
-    this.simSvc.downloadCsv(this.tree, `simulator-tier${this.tier}.csv`);
+    if (!this.tableRows.length) return;
+
+    const header = ['Year', ...this.tableBranches].join(',');
+    const rows   = this.tableRows.map(row => {
+      const cells = row.cols.map(v => v !== null ? v.toFixed(2) : '');
+      return [row.year, ...cells].join(',');
+    });
+
+    const csv  = [header, ...rows].join('\n');
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url  = URL.createObjectURL(blob);
+    const a    = document.createElement('a');
+    a.href     = url;
+    a.download = `simulator-tier${this.tier}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
   }
 
   // ---------------------------------------------------------------------------

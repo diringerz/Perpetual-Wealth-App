@@ -41,13 +41,13 @@ export class SatiricalComponent {
       realityCheck: 'An economy with zero inflation and zero return has no incentive for investment, saving, or capital allocation. It would not be an economy.',
       paradox:      'You need infinite wealth to sustain any finite spending. This is also called a mattress.',
     },
-    {
+    /*{
       condition:    'Full taxation (T = 1)',
       formula:      'r_real = (1 + 0) / (1 + π) − 1 = −π/(1+π) < 0',
       mathResult:   'Perpetual wealth is impossible. The state claims all investment income, leaving only inflation-eroded principal.',
       realityCheck: 'A 100% investment income tax rate would collapse capital markets within a fiscal quarter.',
       paradox:      'The government has solved wealth inequality by ensuring no one can be wealthy.',
-    },
+    },*/
     {
       condition:    'Welfare covers all consumption — S₀(1−T) ≥ C₀',
       formula:      'W₀ = (C₀ − S₀(1−T)) / r_real ≤ 0',
