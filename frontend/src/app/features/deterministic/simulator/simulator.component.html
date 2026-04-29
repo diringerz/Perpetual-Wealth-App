@@ -1,0 +1,185 @@
+<div class="simulator-page">
+
+  <!-- Header -->
+  <div class="page-header">
+    <a [routerLink]="tierPath" class="back-link">← Back to {{ tierConfig.label }}</a>
+    <h1>Year-by-Year Simulator</h1>
+    <p class="page-subtitle">{{ tierConfig.description }}</p>
+  </div>
+
+  <!-- ─── Setup ──────────────────────────────────────────────────────────── -->
+  <div class="setup-card" *ngIf="!setupDone">
+    <h2>Initial conditions</h2>
+    <p class="setup-intro">
+      Set your starting wealth and default parameters.
+      You can change every variable independently for each year once the simulation starts.
+    </p>
+
+    <div class="setup-w0-row">
+      <div class="param-field">
+        <label for="w0">Starting wealth W₀</label>
+        <div class="param-input-row">
+          <input id="w0" type="number" min="0" step="1000" [(ngModel)]="W0Input" />
+          <span class="param-unit">$</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="param-grid">
+      <div class="param-field" *ngFor="let v of formVariables">
+        <label [for]="'s-' + v">
+          {{ getMeta(v).label }}
+          <span class="param-hint">{{ getMeta(v).description }}</span>
+        </label>
+        <div class="param-input-row">
+          <input [id]="'s-' + v" type="number"
+            [min]="getDisplayMin(v)" [max]="getDisplayMax(v)" [step]="getDisplayStep(v)"
+            [(ngModel)]="setupParams[v]" />
+          <span class="param-unit">{{ getMeta(v).unit }}</span>
+        </div>
+      </div>
+    </div>
+
+    <button class="btn-primary btn-full" (click)="startSimulation()">
+      Start simulation →
+    </button>
+  </div>
+
+  <!-- ─── Simulator ──────────────────────────────────────────────────────── -->
+  <ng-container *ngIf="setupDone && tree">
+
+    <!-- Tree -->
+    <div class="tree-card">
+      <div class="card-header">
+        <h2>Wealth tree</h2>
+        <div class="card-header-actions">
+          <button class="btn-secondary btn-sm" (click)="exportCsv()">↓ CSV</button>
+        </div>
+      </div>
+      <p class="card-hint">
+        Click a node to select it. Hover an edge to see that year's parameters.
+        Each colour represents a branch.
+      </p>
+      <app-sim-tree
+        [tree]="tree"
+        [selectedId]="selectedNode?.id ?? null"
+        (nodeSelected)="onNodeSelected($event)"
+      ></app-sim-tree>
+    </div>
+
+    <!-- Selected node actions — only shown when a node is selected and no panel is open -->
+    <div class="action-bar" *ngIf="selectedNode && !panelMode">
+      <div class="action-bar-info">
+        <span class="action-node-label">{{ selectedNode.label }}</span>
+        <span class="action-node-w" [class.bankrupt]="selectedNode.bankrupt">
+          {{ formatW(selectedNode.W) }}
+        </span>
+        <span class="action-node-year">Year {{ selectedNode.year }}</span>
+      </div>
+      <div class="action-bar-btns">
+        <button class="btn-primary"
+          *ngIf="actions?.canStep"
+          (click)="openPanel('step')">
+          → Step to Year {{ selectedNode.year + 1 }}
+        </button>
+        <button class="btn-secondary"
+          *ngIf="actions?.canFork"
+          (click)="openPanel('fork')">
+          ⑂ Fork from here
+        </button>
+        <button class="btn-secondary"
+          *ngIf="actions?.canRecalc"
+          (click)="openPanel('recalc')">
+          ✎ Edit &amp; Recalculate
+        </button>
+        <button class="btn-danger"
+          *ngIf="actions?.canDelete"
+          (click)="deleteSelected()">
+          ✕ Delete
+        </button>
+      </div>
+    </div>
+
+    <!-- Action panel — slides in when an action is chosen -->
+    <div class="action-panel" *ngIf="selectedNode && panelMode">
+      <div class="panel-top">
+        <div class="panel-title-row">
+          <h3 class="panel-title">{{ panelTitle() }}</h3>
+          <button class="btn-close" (click)="closePanel()">✕</button>
+        </div>
+        <p class="panel-desc">{{ panelDescription() }}</p>
+      </div>
+
+      <!-- Bankruptcy advice inside panel -->
+      <div class="advice-block"
+           *ngIf="selectedNode.bankrupt && (advice || adviceLoading)">
+        <div class="advice-loading" *ngIf="adviceLoading">Analysing…</div>
+        <ng-container *ngIf="advice && !adviceLoading">
+          <div class="advice-header">⚠ Bankruptcy detected</div>
+          <p class="advice-detail" *ngIf="advice.shortfall">
+            Shortfall: <strong>{{ formatW(advice.shortfall) }}</strong>
+          </p>
+          <p class="advice-intro">Click a suggestion to apply it:</p>
+          <div class="suggestion-list">
+            <button class="suggestion-btn"
+              *ngFor="let s of advice.suggestions"
+              (click)="applySuggestion(s)">
+              {{ s.plain }}
+            </button>
+          </div>
+        </ng-container>
+      </div>
+
+      <!-- Parameter form -->
+      <div class="panel-params">
+        <div class="param-grid-compact">
+          <div class="param-field" *ngFor="let v of formVariables">
+            <label [for]="'p-' + v">{{ getMeta(v).label }}</label>
+            <div class="param-input-row">
+              <input [id]="'p-' + v" type="number"
+                [min]="getDisplayMin(v)" [max]="getDisplayMax(v)" [step]="getDisplayStep(v)"
+                [(ngModel)]="panelParams[v]" />
+              <span class="param-unit">{{ getMeta(v).unit }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel-footer">
+        <button class="btn-primary" (click)="confirmAction()">
+          {{ confirmLabel() }}
+        </button>
+        <button class="btn-secondary" (click)="closePanel()">Cancel</button>
+      </div>
+    </div>
+
+    <!-- ─── Comparison table ─────────────────────────────────────────────── -->
+    <div class="table-card" *ngIf="tableRows.length > 1">
+      <div class="card-header">
+        <h2>Branch comparison</h2>
+      </div>
+      <div class="table-scroll">
+        <table class="comparison-table">
+          <thead>
+            <tr>
+              <th>Year</th>
+              <th *ngFor="let b of tableBranches">{{ b }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let row of tableRows"
+                [class.row-bankrupt]="row.cols.some(c => c !== null && c < 0)">
+              <td class="year-cell">{{ row.year }}</td>
+              <td *ngFor="let val of row.cols"
+                  [class.cell-bankrupt]="val !== null && val < 0"
+                  [class.cell-empty]="val === null">
+                {{ formatW(val) }}
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </ng-container>
+</div>

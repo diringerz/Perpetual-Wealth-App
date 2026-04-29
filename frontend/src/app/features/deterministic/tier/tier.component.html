@@ -269,5 +269,24 @@
       </div>
     </ng-container>
   </div>
+<!--
+  Add this block at the very bottom of tier.component.html,
+  just before the closing </div> of .tier-page
+-->
 
+  <!-- Simulator footer link -->
+  <div class="simulator-footer" *ngIf="result && !isInfeasible()">
+    <div class="simulator-footer-text">
+      Want to change
+      <span class="footer-vars">{{ tierVariableNames }}</span>
+      year by year?
+    </div>
+    <a
+      [routerLink]="['/deterministic/simulator']"
+      [queryParams]="{ tier: tierConfig.tier, w0: result.W0 | number:'1.0-0' }"
+      class="btn-simulator-link"
+    >
+      Open year-by-year simulator →
+    </a>
+  </div>
 </div>

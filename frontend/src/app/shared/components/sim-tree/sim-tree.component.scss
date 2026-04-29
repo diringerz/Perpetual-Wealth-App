@@ -1,0 +1,106 @@
+@use '../../../../styles/variables' as v;
+@use '../../../../styles/mixins' as m;
+
+.tree-scroll {
+  position:      relative;
+  overflow:      auto;
+  width:         100%;
+  max-height:    520px;
+  border:        1px solid v.$border-light;
+  border-radius: v.$card-radius;
+  background:    v.$off-white;
+}
+
+.tree-svg { display: block; min-width: 100%; }
+
+// Year axis
+.axis-label {
+  font-family:       v.$font-mono;
+  font-size:         11px;
+  fill:              v.$text-muted;
+  text-anchor:       middle;
+  dominant-baseline: central;
+  user-select:       none;
+}
+
+// Edges
+.edge-line {
+  fill:         none;
+  stroke-width: 2;
+  transition:   stroke-width 0.15s;
+}
+.edge-hit {
+  fill:         none;
+  stroke:       transparent;
+  stroke-width: 16;
+  cursor:       pointer;
+}
+.edge-g:hover .edge-line { stroke-width: 3.5; }
+
+// Nodes
+.node-g {
+  cursor: pointer;
+
+  .node-circle {
+    fill:         v.$white;
+    stroke-width: 2;
+    transition:   fill 0.15s, stroke-width 0.15s;
+  }
+
+  &:hover .node-circle,
+  &--selected .node-circle {
+    fill:         v.$teal-faint;
+    stroke-width: 3;
+    filter:       drop-shadow(0 2px 8px rgba(14,124,123,0.22));
+  }
+
+  &--bankrupt .node-circle {
+    fill:   #fef2f2;
+    stroke: v.$danger !important;
+  }
+}
+
+.node-w {
+  font-family:       v.$font-mono;
+  font-size:         11px;
+  font-weight:       600;
+  fill:              v.$navy;
+  text-anchor:       middle;
+  dominant-baseline: central;
+  pointer-events:    none;
+  user-select:       none;
+}
+
+.node-lbl {
+  font-size:         9px;
+  fill:              v.$text-muted;
+  text-anchor:       middle;
+  dominant-baseline: central;
+  pointer-events:    none;
+  user-select:       none;
+}
+
+.node-warn {
+  font-size:      11px;
+  fill:           v.$danger;
+  text-anchor:    middle;
+  pointer-events: none;
+}
+
+// Tooltip
+.tip {
+  position:      absolute;
+  background:    v.$navy;
+  color:         v.$white;
+  border-radius: v.$badge-radius;
+  padding:       v.$space-2 v.$space-3;
+  font-size:     v.$text-xs;
+  line-height:   v.$leading-relaxed;
+  pointer-events: none;
+  z-index:       200;
+  white-space:   nowrap;
+  box-shadow:    v.$shadow-md;
+}
+.tip-row { display: flex; gap: v.$space-3; }
+.tip-k   { color: rgba(255,255,255,0.55); min-width: 80px; }
+.tip-v   { font-family: v.$font-mono; font-weight: v.$weight-semi; }

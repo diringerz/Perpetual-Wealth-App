@@ -8,7 +8,7 @@ import {
 } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, RouterModule } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { WealthApiService } from '../../../core/services/wealth-api.service';
 import { DefaultParamsService } from '../../../core/services/default-params.service';
@@ -32,7 +32,7 @@ export interface RankedFactor {
 @Component({
   selector:        'app-tier',
   standalone:      true,
-  imports:         [CommonModule, FormsModule, SweepGraphComponent],
+  imports:         [CommonModule, FormsModule, RouterModule, SweepGraphComponent],
   changeDetection: ChangeDetectionStrategy.Default,
   styleUrls:       ['./tier.component.scss'],
   templateUrl:     './tier.component.html',
@@ -361,5 +361,16 @@ export class TierComponent implements OnInit, OnDestroy {
 
   trackByVar(_index: number, v: SweepVariable): string {
     return v;
+  }
+
+   get tierVariableNames(): string {
+    return this.tierConfig.variables
+      .map(v => {
+        const symbols: Record<string, string> = {
+          i: 'i', T: 'T', pi: 'π', C0: 'C₀', S0: 'S₀', g: 'g',
+        };
+        return symbols[v] ?? v;
+      })
+      .join(', ');
   }
 }

@@ -1,0 +1,347 @@
+@use '../../../../styles/variables' as v;
+@use '../../../../styles/mixins' as m;
+
+.simulator-page {
+  max-width:     v.$max-width;
+  display:       flex;
+  flex-direction: column;
+  gap:           v.$space-6;
+}
+
+// ---------------------------------------------------------------------------
+// Header
+// ---------------------------------------------------------------------------
+
+.page-header {
+  @include m.page-header;
+  margin-bottom: 0;
+}
+
+.back-link {
+  display:     inline-block;
+  font-size:   v.$text-sm;
+  color:       v.$teal;
+  text-decoration: none;
+  font-weight: v.$weight-medium;
+  margin-bottom: v.$space-2;
+  &:hover { text-decoration: underline; }
+}
+
+// ---------------------------------------------------------------------------
+// Setup
+// ---------------------------------------------------------------------------
+
+.setup-card {
+  @include m.card;
+  max-width: 760px;
+
+  h2 { @include m.section-heading; }
+}
+
+.setup-intro {
+  font-size:     v.$text-sm;
+  color:         v.$text-secondary;
+  margin-bottom: v.$space-5;
+  line-height:   v.$leading-relaxed;
+}
+
+.setup-w0-row {
+  max-width: 260px;
+  margin-bottom: v.$space-5;
+}
+
+// ---------------------------------------------------------------------------
+// Shared param grid
+// ---------------------------------------------------------------------------
+
+.param-grid {
+  display:               grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap:                   v.$space-4;
+  margin-bottom:         v.$space-6;
+}
+
+.param-grid-compact {
+  display:               grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap:                   v.$space-3;
+}
+
+.param-field {
+  display:        flex;
+  flex-direction: column;
+  gap:            v.$space-1;
+
+  label { @include m.label-base; font-size: v.$text-xs; }
+
+  .param-hint {
+    display:     block;
+    font-size:   v.$text-xs;
+    color:       v.$text-muted;
+    font-weight: v.$weight-normal;
+    line-height: v.$leading-relaxed;
+  }
+}
+
+.param-input-row {
+  display:     flex;
+  align-items: center;
+  gap:         v.$space-2;
+
+  input {
+    @include m.input-base;
+    flex:        1;
+    font-family: v.$font-mono;
+    font-size:   v.$text-sm;
+    padding:     v.$space-2;
+  }
+
+  .param-unit {
+    font-size:   v.$text-xs;
+    color:       v.$text-muted;
+    min-width:   20px;
+    flex-shrink: 0;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Card wrapper
+// ---------------------------------------------------------------------------
+
+.tree-card,
+.table-card {
+  @include m.card;
+}
+
+.card-header {
+  display:         flex;
+  align-items:     center;
+  justify-content: space-between;
+  margin-bottom:   v.$space-3;
+
+  h2 {
+    @include m.section-heading;
+    margin:  0;
+    padding: 0;
+    border:  none;
+    font-size: v.$text-lg;
+  }
+}
+
+.card-header-actions { display: flex; gap: v.$space-2; }
+
+.card-hint {
+  font-size:     v.$text-xs;
+  color:         v.$text-muted;
+  margin-bottom: v.$space-4;
+  line-height:   v.$leading-relaxed;
+}
+
+// ---------------------------------------------------------------------------
+// Action bar — shown when node selected and no panel open
+// ---------------------------------------------------------------------------
+
+.action-bar {
+  @include m.card;
+  display:     flex;
+  align-items: center;
+  gap:         v.$space-6;
+  flex-wrap:   wrap;
+  background:  v.$off-white;
+  border-color:v.$border;
+}
+
+.action-bar-info {
+  display:    flex;
+  align-items:baseline;
+  gap:        v.$space-3;
+  flex-shrink: 0;
+}
+
+.action-node-label {
+  font-family: v.$font-mono;
+  font-size:   v.$text-sm;
+  font-weight: v.$weight-semi;
+  color:       v.$text-secondary;
+}
+
+.action-node-w {
+  font-size:   v.$text-xl;
+  font-weight: v.$weight-bold;
+  color:       v.$navy;
+
+  &.bankrupt { color: v.$danger; }
+}
+
+.action-node-year {
+  font-size: v.$text-xs;
+  color:     v.$text-muted;
+}
+
+.action-bar-btns {
+  display:  flex;
+  gap:      v.$space-2;
+  flex-wrap:wrap;
+  margin-left: auto;
+}
+
+// ---------------------------------------------------------------------------
+// Action panel
+// ---------------------------------------------------------------------------
+
+.action-panel {
+  @include m.card;
+  border-color:  v.$teal;
+  border-width:  2px;
+  display:       flex;
+  flex-direction:column;
+  gap:           v.$space-4;
+}
+
+.panel-top { display: flex; flex-direction: column; gap: v.$space-1; }
+
+.panel-title-row {
+  display:         flex;
+  align-items:     center;
+  justify-content: space-between;
+}
+
+.panel-title {
+  font-size:   v.$text-base;
+  font-weight: v.$weight-semi;
+  color:       v.$navy;
+  margin:      0;
+}
+
+.panel-desc {
+  font-size:   v.$text-sm;
+  color:       v.$text-secondary;
+  margin:      0;
+  line-height: v.$leading-relaxed;
+}
+
+.panel-params { /* just contains the grid */ }
+
+.panel-footer {
+  display: flex;
+  gap:     v.$space-3;
+  padding-top: v.$space-2;
+  border-top:  1px solid v.$border-light;
+}
+
+// ---------------------------------------------------------------------------
+// Advice block
+// ---------------------------------------------------------------------------
+
+.advice-block {
+  @include m.banner(v.$warning-faint, v.$warning, v.$warning);
+  display:        flex;
+  flex-direction: column;
+  gap:            v.$space-2;
+}
+
+.advice-loading { font-size: v.$text-sm; font-style: italic; }
+.advice-header  { font-weight: v.$weight-semi; font-size: v.$text-sm; }
+.advice-detail  { font-size: v.$text-xs; margin: 0; }
+.advice-intro   { font-size: v.$text-xs; margin: 0; }
+
+.suggestion-list { display: flex; flex-direction: column; gap: v.$space-1; }
+
+.suggestion-btn {
+  @include m.btn-base;
+  font-size:      v.$text-xs;
+  text-align:     left;
+  justify-content:flex-start;
+  white-space:    normal;
+  line-height:    v.$leading-relaxed;
+  padding:        v.$space-2 v.$space-3;
+  color:          v.$warning;
+  border-color:   v.$warning;
+  background:     transparent;
+
+  &:hover:not(:disabled) {
+    background:   rgba(245,158,11,0.1);
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Comparison table
+// ---------------------------------------------------------------------------
+
+.table-scroll {
+  overflow-x: auto;
+}
+
+.comparison-table {
+  @include m.table-base;
+  min-width: 100%;
+
+  th:first-child,
+  td:first-child {
+    width: 60px;
+  }
+}
+
+.year-cell {
+  font-family: v.$font-mono;
+  font-size:   v.$text-sm;
+  color:       v.$text-muted;
+  font-weight: v.$weight-medium;
+}
+
+.cell-bankrupt {
+  color:       v.$danger;
+  font-weight: v.$weight-semi;
+}
+
+.cell-empty {
+  color:      v.$text-muted;
+  font-style: italic;
+}
+
+.row-bankrupt { background: #fff5f5; }
+
+// ---------------------------------------------------------------------------
+// Buttons
+// ---------------------------------------------------------------------------
+
+.btn-primary {
+  @include m.btn-primary;
+  font-size: v.$text-sm;
+}
+
+.btn-full { width: 100%; justify-content: center; }
+
+.btn-secondary {
+  @include m.btn-secondary;
+  font-size: v.$text-sm;
+}
+
+.btn-sm {
+  padding:   v.$space-1 v.$space-3 !important;
+  font-size: v.$text-xs !important;
+}
+
+.btn-danger {
+  @include m.btn-base;
+  background:   transparent;
+  color:        v.$danger;
+  border-color: v.$danger;
+  font-size:    v.$text-sm;
+
+  &:hover:not(:disabled) {
+    background: v.$danger;
+    color:      v.$white;
+  }
+}
+
+.btn-close {
+  @include m.btn-base;
+  background:   transparent;
+  color:        v.$text-muted;
+  border:       none;
+  padding:      v.$space-1 v.$space-2;
+  font-size:    v.$text-base;
+
+  &:hover { color: v.$navy; }
+}

@@ -47,17 +47,14 @@ export const routes: Routes = [
             (m) => m.TierComponent
           ),
         data: { tier: 3 },
-      }
-      /*,
-      {
-        path: 'tier-4',
-        loadComponent: () =>
-          import('./features/deterministic/tier/tier.component').then(
-            (m) => m.TierComponent
-          ),
-        data: { tier: 4 },
       },
-      */
+      {
+        path: 'simulator',
+        loadComponent: () =>
+          import('./features/deterministic/simulator/simulator.component').then(
+            (m) => m.SimulatorComponent
+          ),
+      },
     ],
   },
   {

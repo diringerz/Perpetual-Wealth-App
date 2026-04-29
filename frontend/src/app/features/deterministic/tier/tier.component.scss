@@ -430,3 +430,40 @@
   color:       v.$text-secondary;
   line-height: v.$leading-relaxed;
 }
+
+// Add to tier.component.scss
+
+.simulator-footer {
+  @include m.card;
+  display:         flex;
+  align-items:     center;
+  justify-content: space-between;
+  gap:             v.$space-4;
+  margin-top:      v.$space-6;
+  background:      v.$teal-faint;
+  border-color:    v.$teal;
+
+  @media (max-width: 600px) {
+    flex-direction: column;
+    align-items:    flex-start;
+  }
+}
+
+.simulator-footer-text {
+  font-size:   v.$text-sm;
+  color:       v.$text-secondary;
+  line-height: v.$leading-relaxed;
+}
+
+.footer-vars {
+  font-family: v.$font-mono;
+  font-weight: v.$weight-semi;
+  color:       v.$navy;
+}
+
+.btn-simulator-link {
+  @include m.btn-primary;
+  white-space:     nowrap;
+  text-decoration: none;
+  flex-shrink:     0;
+}
