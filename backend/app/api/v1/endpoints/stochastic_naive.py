@@ -16,31 +16,52 @@ import numpy as np
 from fastapi import APIRouter
 from pydantic import BaseModel, Field
 
-router = APIRouter(prefix="/api/v1/stochastic/naive", tags=["stochastic-naive"])
+router = APIRouter(prefix="/stochastic/naive", tags=["stochastic-naive"])
 
 
 # ---------------------------------------------------------------------------
 # Distribution models
 # ---------------------------------------------------------------------------
 
-class NormalDist(BaseModel):
-    type: Literal["normal"]
+class NormalParams(BaseModel):
     mean: float
     std:  float = Field(gt=0)
 
 
-class UniformDist(BaseModel):
-    type: Literal["uniform"]
+class UniformParams(BaseModel):
     low:  float
     high: float
 
 
+class ExponentialParams(BaseModel):
+    scale: float = Field(gt=0)
+
+
+class PoissonParams(BaseModel):
+    lam: float = Field(gt=0)   # lambda — mean of the Poisson distribution
+
+
+class NormalDist(BaseModel):
+    type:   Literal["normal"]
+    params: NormalParams
+
+
+class UniformDist(BaseModel):
+    type:   Literal["uniform"]
+    params: UniformParams
+
+
 class ExponentialDist(BaseModel):
-    type:  Literal["exponential"]
-    scale: float = Field(gt=0)   # mean of the exponential = 1/lambda
+    type:   Literal["exponential"]
+    params: ExponentialParams
 
 
-AnyDist = Union[NormalDist, UniformDist, ExponentialDist]
+class PoissonDist(BaseModel):
+    type:   Literal["poisson"]
+    params: PoissonParams
+
+
+AnyDist = Union[NormalDist, UniformDist, ExponentialDist, PoissonDist]
 
 
 # ---------------------------------------------------------------------------
@@ -66,15 +87,20 @@ def sample_clipped(dist: AnyDist, var: str, size: int, rng: np.random.Generator)
 
     if isinstance(dist, NormalDist):
         from scipy.stats import norm
-        vals = norm.ppf(u, loc=dist.mean, scale=dist.std)
+        vals = norm.ppf(u, loc=dist.params.mean, scale=dist.params.std)
 
     elif isinstance(dist, UniformDist):
         # Inverse CDF of Uniform(low, high): low + u * (high - low)
-        vals = dist.low + u * (dist.high - dist.low)
+        vals = dist.params.low + u * (dist.params.high - dist.params.low)
 
     elif isinstance(dist, ExponentialDist):
         from scipy.stats import expon
-        vals = expon.ppf(u, scale=dist.scale)
+        vals = expon.ppf(u, scale=dist.params.scale)
+
+    elif isinstance(dist, PoissonDist):
+        from scipy.stats import poisson
+        # Poisson inverse CDF — returns integer-valued floats
+        vals = poisson.ppf(u, mu=dist.params.lam).astype(float)
 
     else:
         raise ValueError(f"Unknown distribution type: {dist.type}")

@@ -52,31 +52,36 @@ const CONFIGS: Record<string, ModeConfig> = {
 
   stochastic: {
     title:    'Stochastic models',
-    subtitle: 'Probabilistic outcomes under uncertain returns',
-    comingSoon: true,
+    subtitle: 'Probabilistic outcomes under uncertain parameters',
+    comingSoon: false,
     description: [
-      'Stochastic models recognise that investment returns are not fixed — they fluctuate year to year according to some probability distribution. Rather than a single required wealth W₀, stochastic analysis produces a distribution of outcomes: a probability that your wealth lasts a given number of years, and a ruin probability — the chance your portfolio hits zero before you do.',
-      'The underlying process is a stochastic differential equation (SDE) driven by a Wiener process. Monte Carlo simulation samples thousands of return paths and aggregates the results into trajectory distributions and confidence intervals.',
+      'Stochastic models recognise that real-world parameters — return rate, inflation, consumption, tax — are not fixed constants but fluctuate year to year. Rather than a single required wealth W₀, stochastic analysis produces a distribution of outcomes across thousands of simulated paths: what fraction end in net gain, what fraction survive but decline, and what fraction hit ruin.',
+      'The naive mode assumes all variables are sampled independently each year from user-specified distributions using the inverse CDF method. This is the simplest stochastic formulation — no correlations between variables, no memory between years. It serves as a baseline for understanding how parameter uncertainty alone affects long-run wealth trajectories.',
     ],
     assumptions: [
-      'Annual returns follow a log-normal distribution with a given mean μ and volatility σ',
-      'Return shocks are independently and identically distributed (i.i.d.)',
-      'Inflation and tax are treated as deterministic constants',
-      'Consumption follows the same inflation-adjusted growth as in Tier 2+',
+      'Each variable is sampled independently each year — no cross-variable correlation',
+      'Samples are drawn using the probability integral transform (inverse CDF)',
+      'Consumption and welfare distribution means grow with sampled inflation each year',
+      'Paths stop at first ruin — negative wealth is not allowed to compound',
+      'All tier assumptions from the deterministic models carry forward',
     ],
     useCases: [
-      'Quantifying the probability of outliving your wealth under realistic market conditions',
-      'Comparing the ruin probability of different initial wealth levels',
-      'Understanding how return volatility σ affects the safety margin above the deterministic W₀',
-      'Stress-testing a retirement plan against historical return distributions',
+      'Quantifying ruin probability under realistic parameter uncertainty',
+      'Understanding how return volatility affects the safety margin above W₀',
+      'Comparing Normal vs Uniform vs Poisson assumptions for consumption',
+      'Stress-testing a financial plan across thousands of possible futures',
     ],
     behaviors: [
-      'Higher volatility σ increases ruin probability even when mean return μ exceeds the deterministic threshold',
-      'The deterministic W₀ is the lower bound — stochastic W₀ for a given safety level is always higher',
-      'Sequence-of-returns risk means early bad years are disproportionately damaging',
-      'Monte Carlo trajectories fan out over time — confidence intervals widen with horizon',
+      'Higher variance in return rate dramatically increases ruin probability',
+      'Ruin paths stop early — mean years to ruin is always less than N',
+      'Fan chart narrows when surviving paths converge; widens under high variance',
+      'Poisson-distributed consumption models discrete spending shocks naturally',
     ],
-    links: [],
+    links: [
+      { label: 'Naive — Tier 1', route: '/stochastic/naive/tier-1' },
+      { label: 'Naive — Tier 2', route: '/stochastic/naive/tier-2' },
+      { label: 'Naive — Tier 3', route: '/stochastic/naive/tier-3' },
+    ],
   },
 };
 

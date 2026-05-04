@@ -1,6 +1,6 @@
 import {
   Component, OnInit,
-  ChangeDetectionStrategy, ChangeDetectorRef,
+  ChangeDetectionStrategy, ChangeDetectorRef, NgZone,
   CUSTOM_ELEMENTS_SCHEMA,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
@@ -16,8 +16,8 @@ import {
 import { StochasticService } from '../../../core/services/stochastic.service';
 import { DefaultParamsService } from '../../../core/services/default-params.service';
 import {
-  AnyDist, DistributionType, NormalDist, UniformDist, ExponentialDist,
-  VARIABLE_DISTS, DEFAULT_DISTS,
+  AnyDist, DistributionType, NormalDist, UniformDist, ExponentialDist, PoissonDist,
+  VARIABLE_DISTS, DEFAULT_DISTS, DEFAULT_POISSON,
   StochasticResponse, FanChart,
 } from '../../../shared/models/stochastic.models';
 import { SweepVariable, TierConfig } from '../../../shared/models/wealth.models';
@@ -43,7 +43,8 @@ export class StochasticNaiveComponent implements OnInit {
   // ---------------------------------------------------------------------------
   tier!:       number;
   tierConfig!: TierConfig;
-  tierPath!:   string;
+  tierPath!:        string;
+  stochasticPath!:  string;
 
   // ---------------------------------------------------------------------------
   // Simulation config
@@ -102,6 +103,7 @@ export class StochasticNaiveComponent implements OnInit {
     normal:      'Normal',
     uniform:     'Uniform',
     exponential: 'Exponential',
+    poisson:     'Poisson',
   };
 
   private readonly rawVars = new Set<string>(['C0', 'S0']);
@@ -111,6 +113,7 @@ export class StochasticNaiveComponent implements OnInit {
     private svc:       StochasticService,
     private defaults:  DefaultParamsService,
     private cdr:       ChangeDetectorRef,
+    private zone:      NgZone,
   ) {}
 
   // ---------------------------------------------------------------------------
@@ -118,9 +121,10 @@ export class StochasticNaiveComponent implements OnInit {
   // ---------------------------------------------------------------------------
 
   ngOnInit(): void {
-    this.tier       = Number(this.route.snapshot.data['tier'] ?? 2);
-    this.tierConfig = this.defaults.tierConfigs[this.tier];
-    this.tierPath   = `/deterministic/tier-${this.tier}`;
+    this.tier            = Number(this.route.snapshot.data['tier'] ?? 2);
+    this.tierConfig      = this.defaults.tierConfigs[this.tier];
+    this.tierPath        = `/deterministic/tier-${this.tier}`;
+    this.stochasticPath  = '/stochastic';
 
     // Initialise distributions — display scale for rate means
     this.resetDists();
@@ -147,6 +151,9 @@ export class StochasticNaiveComponent implements OnInit {
         break;
       case 'exponential':
         this.dists[v] = { type: 'exponential', params: { scale: this.defaultMean(v) } };
+        break;
+      case 'poisson':
+        this.dists[v] = DEFAULT_POISSON[v] ?? { type: 'poisson', params: { lam: this.defaultMean(v) } };
         break;
     }
     this.cdr.detectChanges();
@@ -178,15 +185,19 @@ export class StochasticNaiveComponent implements OnInit {
       distributions: apiDists,
     }).subscribe({
       next: (res) => {
-        this.result  = res;
-        this.loading = false;
-        this.buildChart(res.fan_chart);
-        this.cdr.detectChanges();
+        this.zone.run(() => {
+          this.result  = res;
+          this.loading = false;
+          this.buildChart(res.fan_chart);
+          this.cdr.detectChanges();
+        });
       },
       error: () => {
-        this.error   = 'Simulation failed. Please check your parameters.';
-        this.loading = false;
-        this.cdr.detectChanges();
+        this.zone.run(() => {
+          this.error   = 'Simulation failed. Please check your parameters.';
+          this.loading = false;
+          this.cdr.detectChanges();
+        });
       },
     });
   }
@@ -246,6 +257,7 @@ export class StochasticNaiveComponent implements OnInit {
   asNormal(v: string): NormalDist { return this.dists[v] as NormalDist; }
   asUniform(v: string): UniformDist { return this.dists[v] as UniformDist; }
   asExponential(v: string): ExponentialDist { return this.dists[v] as ExponentialDist; }
+  asPoisson(v: string): PoissonDist { return this.dists[v] as PoissonDist; }
 
   formatW(w: number | null): string {
     if (w === null) return 'N/A';
@@ -276,7 +288,7 @@ export class StochasticNaiveComponent implements OnInit {
   }
 
   private toDecimalDist(v: string, d: AnyDist): AnyDist {
-    if (!this.isRate(v)) return d;
+    if (!this.isRate(v)) return d;  // C0, S0 — no conversion needed including poisson
     const scale = 100;
     if (d.type === 'normal')
       return { type: 'normal', params: { mean: d.params.mean / scale, std: d.params.std / scale } };

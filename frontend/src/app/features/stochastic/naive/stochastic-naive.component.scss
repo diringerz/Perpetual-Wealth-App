@@ -17,6 +17,26 @@
   margin-bottom: 0;
 }
 
+.header-nav {
+  display:     flex;
+  align-items: center;
+  gap:         v.$space-2;
+  margin-bottom: v.$space-2;
+}
+
+.back-link {
+  font-size:   v.$text-sm;
+  color:       v.$teal;
+  text-decoration: none;
+  font-weight: v.$weight-medium;
+  &:hover { text-decoration: underline; }
+}
+
+.header-sep {
+  color:     v.$text-muted;
+  font-size: v.$text-sm;
+}
+
 // ---------------------------------------------------------------------------
 // Cards
 // ---------------------------------------------------------------------------

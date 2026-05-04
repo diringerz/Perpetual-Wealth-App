@@ -34,8 +34,10 @@ export class TopMenuComponent {
       label: 'Stochastic',
       route: '/stochastic',
       children: [
-        { label: 'Overview', route: '/stochastic'
-      },
+        { label: 'Overview',                    route: '/stochastic' },
+        { label: 'Naive — Tier 1',              route: '/stochastic/naive/tier-1' },
+        { label: 'Naive — Tier 2',              route: '/stochastic/naive/tier-2' },
+        { label: 'Naive — Tier 3',              route: '/stochastic/naive/tier-3' },
       ],
     },
   ];

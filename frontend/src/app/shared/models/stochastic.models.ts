@@ -2,25 +2,27 @@
 // Distribution types
 // ---------------------------------------------------------------------------
 
-export type DistributionType = 'normal' | 'uniform' | 'exponential';
+export type DistributionType = 'normal' | 'uniform' | 'exponential' | 'poisson';
 
-export interface NormalParams  { mean: number; std:   number; }
-export interface UniformParams { low:  number; high:  number; }
+export interface NormalParams      { mean:  number; std:   number; }
+export interface UniformParams     { low:   number; high:  number; }
 export interface ExponentialParams { scale: number; }
+export interface PoissonParams     { lam:   number; }
 
-export interface NormalDist     { type: 'normal';      params: NormalParams;      }
-export interface UniformDist    { type: 'uniform';     params: UniformParams;     }
+export interface NormalDist      { type: 'normal';      params: NormalParams;      }
+export interface UniformDist     { type: 'uniform';     params: UniformParams;     }
 export interface ExponentialDist { type: 'exponential'; params: ExponentialParams; }
+export interface PoissonDist     { type: 'poisson';     params: PoissonParams;     }
 
-export type AnyDist = NormalDist | UniformDist | ExponentialDist;
+export type AnyDist = NormalDist | UniformDist | ExponentialDist | PoissonDist;
 
 // Which distributions are valid per variable
 export const VARIABLE_DISTS: Record<string, DistributionType[]> = {
   i:  ['normal', 'uniform'],
   T:  ['normal', 'uniform'],
   pi: ['normal', 'uniform'],
-  C0: ['normal', 'uniform', 'exponential'],
-  S0: ['normal', 'uniform', 'exponential'],
+  C0: ['normal', 'uniform', 'exponential', 'poisson'],
+  S0: ['normal', 'uniform', 'exponential', 'poisson'],
   g:  ['normal', 'uniform'],
 };
 
@@ -32,6 +34,11 @@ export const DEFAULT_DISTS: Record<string, AnyDist> = {
   C0: { type: 'normal',  params: { mean: 80_000, std: 5_000 } },
   S0: { type: 'uniform', params: { low:  0,      high: 0    } },
   g:  { type: 'uniform', params: { low:  0,      high: 0    } },
+};
+
+export const DEFAULT_POISSON: Record<string, AnyDist> = {
+  C0: { type: 'poisson', params: { lam: 80_000 } },
+  S0: { type: 'poisson', params: { lam: 10_000 } },
 };
 
 // ---------------------------------------------------------------------------
