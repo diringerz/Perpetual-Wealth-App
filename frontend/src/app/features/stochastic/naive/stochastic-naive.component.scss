@@ -1,0 +1,324 @@
+@use '../../../../styles/variables' as v;
+@use '../../../../styles/mixins' as m;
+
+.stochastic-page {
+  max-width:      v.$max-width;
+  display:        flex;
+  flex-direction: column;
+  gap:            v.$space-6;
+}
+
+// ---------------------------------------------------------------------------
+// Header
+// ---------------------------------------------------------------------------
+
+.page-header {
+  @include m.page-header;
+  margin-bottom: 0;
+}
+
+// ---------------------------------------------------------------------------
+// Cards
+// ---------------------------------------------------------------------------
+
+.config-card,
+.dist-card,
+.results-card,
+.chart-card {
+  @include m.card;
+
+  h2 { @include m.section-heading; }
+}
+
+.card-header {
+  margin-bottom: v.$space-4;
+
+  h2 {
+    @include m.section-heading;
+    margin-bottom: v.$space-1;
+    padding-bottom: 0;
+    border-bottom:  none;
+    font-size:      v.$text-lg;
+  }
+}
+
+.card-hint {
+  font-size:   v.$text-xs;
+  color:       v.$text-muted;
+  margin:      0;
+  line-height: v.$leading-relaxed;
+}
+
+// ---------------------------------------------------------------------------
+// Sim settings row
+// ---------------------------------------------------------------------------
+
+.sim-settings-row {
+  display:               grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap:                   v.$space-4;
+}
+
+.param-field {
+  display:        flex;
+  flex-direction: column;
+  gap:            v.$space-1;
+
+  label { @include m.label-base; }
+
+  .param-hint {
+    display:     inline;
+    font-size:   v.$text-xs;
+    color:       v.$text-muted;
+    font-weight: v.$weight-normal;
+    margin-left: v.$space-1;
+  }
+
+  input {
+    @include m.input-base;
+    font-family: v.$font-mono;
+    font-size:   v.$text-sm;
+  }
+}
+
+.param-input-row {
+  display:     flex;
+  align-items: center;
+  gap:         v.$space-2;
+
+  input {
+    @include m.input-base;
+    flex:        1;
+    font-family: v.$font-mono;
+    font-size:   v.$text-sm;
+  }
+
+  .param-unit {
+    font-size:   v.$text-xs;
+    color:       v.$text-muted;
+    min-width:   18px;
+    flex-shrink: 0;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Distribution grid
+// ---------------------------------------------------------------------------
+
+.dist-intro {
+  font-size:     v.$text-sm;
+  color:         v.$text-secondary;
+  margin-bottom: v.$space-5;
+  line-height:   v.$leading-relaxed;
+}
+
+.dist-grid {
+  display:        flex;
+  flex-direction: column;
+  gap:            v.$space-3;
+  margin-bottom:  v.$space-6;
+}
+
+.dist-row {
+  display:               grid;
+  grid-template-columns: 160px 140px 1fr;
+  align-items:           center;
+  gap:                   v.$space-4;
+  padding:               v.$space-3 v.$space-4;
+  background:            v.$off-white;
+  border-radius:         v.$input-radius;
+  border:                1px solid v.$border-light;
+
+  @media (max-width: 720px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.dist-var-label {
+  display:        flex;
+  flex-direction: column;
+  gap:            2px;
+}
+
+.dist-var-name {
+  font-size:   v.$text-sm;
+  font-weight: v.$weight-semi;
+  color:       v.$navy;
+}
+
+.dist-var-unit {
+  font-size:   v.$text-xs;
+  color:       v.$text-muted;
+  font-family: v.$font-mono;
+}
+
+.dist-type-select {
+  select {
+    @include m.input-base;
+    cursor:    pointer;
+    font-size: v.$text-sm;
+  }
+}
+
+.dist-params {
+  display: flex;
+  gap:     v.$space-3;
+}
+
+.dist-param-field {
+  display:        flex;
+  flex-direction: column;
+  gap:            v.$space-1;
+  min-width:      110px;
+
+  label {
+    font-size:   v.$text-xs;
+    color:       v.$text-muted;
+    font-weight: v.$weight-medium;
+  }
+
+  input {
+    @include m.input-base;
+    font-family: v.$font-mono;
+    font-size:   v.$text-sm;
+    padding:     v.$space-2;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Config actions
+// ---------------------------------------------------------------------------
+
+.config-actions {
+  display: flex;
+  gap:     v.$space-3;
+}
+
+// ---------------------------------------------------------------------------
+// Outcome stats
+// ---------------------------------------------------------------------------
+
+.outcome-grid {
+  display:               grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap:                   v.$space-4;
+  margin-bottom:         v.$space-6;
+
+  @media (max-width: 640px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.outcome-stat {
+  @include m.card;
+  display:         flex;
+  flex-direction:  column;
+  align-items:     center;
+  text-align:      center;
+  gap:             v.$space-1;
+  padding:         v.$space-5;
+  border-width:    2px;
+
+  &--gain  { border-color: v.$teal;    background: v.$teal-faint; }
+  &--loss  { border-color: v.$warning; background: v.$warning-faint; }
+  &--ruin  { border-color: v.$danger;  background: v.$danger-faint; }
+}
+
+.outcome-pct {
+  font-size:   v.$text-3xl;
+  font-weight: v.$weight-bold;
+  line-height: 1;
+
+  .outcome-stat--gain &  { color: v.$teal; }
+  .outcome-stat--loss &  { color: v.$warning; }
+  .outcome-stat--ruin &  { color: v.$danger; }
+}
+
+.outcome-label {
+  font-size:      v.$text-xs;
+  font-weight:    v.$weight-semi;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color:          v.$text-secondary;
+}
+
+.outcome-count {
+  font-family: v.$font-mono;
+  font-size:   v.$text-sm;
+  color:       v.$text-secondary;
+}
+
+.outcome-desc {
+  font-size:   v.$text-xs;
+  color:       v.$text-muted;
+  line-height: v.$leading-relaxed;
+}
+
+// ---------------------------------------------------------------------------
+// Secondary stats
+// ---------------------------------------------------------------------------
+
+.secondary-stats {
+  display:               grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap:                   v.$space-4;
+  padding-top:           v.$space-4;
+  border-top:            1px solid v.$border-light;
+}
+
+.secondary-stat {
+  display:        flex;
+  flex-direction: column;
+  gap:            v.$space-1;
+}
+
+.sec-label {
+  font-size:      v.$text-xs;
+  color:          v.$text-muted;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-weight:    v.$weight-medium;
+}
+
+.sec-value {
+  font-size:   v.$text-xl;
+  font-weight: v.$weight-bold;
+  color:       v.$navy;
+  font-family: v.$font-mono;
+}
+
+// ---------------------------------------------------------------------------
+// Fan chart
+// ---------------------------------------------------------------------------
+
+.chart-wrapper {
+  height: 400px;
+
+  canvas {
+    width:  100% !important;
+    height: 100% !important;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Error
+// ---------------------------------------------------------------------------
+
+.error-banner {
+  @include m.banner(v.$danger-faint, v.$danger, v.$danger);
+}
+
+// ---------------------------------------------------------------------------
+// Buttons
+// ---------------------------------------------------------------------------
+
+.btn-primary {
+  @include m.btn-primary;
+  font-size: v.$text-sm;
+  padding:   v.$space-3 v.$space-8;
+}
+
+.btn-secondary {
+  @include m.btn-secondary;
+  font-size: v.$text-sm;
+}

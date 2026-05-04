@@ -1,0 +1,198 @@
+<div class="stochastic-page">
+
+  <!-- Header -->
+  <div class="page-header">
+    <h1>Stochastic Simulator — Naive Mode</h1>
+    <p class="page-subtitle">
+      Each variable is sampled independently from its distribution every year.
+      Run K trials over N years to see the distribution of outcomes.
+    </p>
+  </div>
+
+  <!-- ─── Configuration ──────────────────────────────────────────────────── -->
+  <div class="config-card">
+    <h2>Simulation settings</h2>
+
+    <div class="sim-settings-row">
+      <div class="param-field">
+        <label for="w0">Starting wealth W₀ ($)</label>
+        <div class="param-input-row">
+          <input id="w0" type="number" min="1000" step="1000" [(ngModel)]="W0" />
+          <span class="param-unit">$</span>
+        </div>
+      </div>
+      <div class="param-field">
+        <label for="k-input">
+          Trials (K)
+          <span class="param-hint">Max 10,000</span>
+        </label>
+        <input id="k-input" type="number" min="100" max="10000" step="100" [(ngModel)]="k" />
+      </div>
+      <div class="param-field">
+        <label for="n-input">
+          Years (N)
+          <span class="param-hint">Max 1,000</span>
+        </label>
+        <input id="n-input" type="number" min="1" max="1000" step="1" [(ngModel)]="n" />
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── Distribution config ────────────────────────────────────────────── -->
+  <div class="dist-card">
+    <h2>Variable distributions</h2>
+    <p class="dist-intro">
+      Each variable is sampled independently each year using the inverse CDF method.
+      Consumption and welfare means grow with the sampled inflation each year.
+    </p>
+
+    <div class="dist-grid">
+      <div class="dist-row" *ngFor="let v of formVariables">
+
+        <!-- Variable label -->
+        <div class="dist-var-label">
+          <span class="dist-var-name">{{ getMeta(v).label }}</span>
+          <span class="dist-var-unit">{{ getMeta(v).unit }}</span>
+        </div>
+
+        <!-- Distribution type selector -->
+        <div class="dist-type-select">
+          <select
+            [ngModel]="distType(v)"
+            (ngModelChange)="onDistTypeChange(v, $event)"
+          >
+            <option
+              *ngFor="let dt of VARIABLE_DISTS[v]"
+              [value]="dt"
+            >{{ distTypeLabels[dt] }}</option>
+          </select>
+        </div>
+
+        <!-- Distribution parameters -->
+        <div class="dist-params">
+
+          <!-- Normal -->
+          <ng-container *ngIf="distType(v) === 'normal'">
+            <div class="dist-param-field">
+              <label>Mean</label>
+              <input type="number" [step]="getMeta(v).step"
+                [(ngModel)]="asNormal(v).params.mean" />
+            </div>
+            <div class="dist-param-field">
+              <label>Std dev</label>
+              <input type="number" min="0" [step]="getMeta(v).step"
+                [(ngModel)]="asNormal(v).params.std" />
+            </div>
+          </ng-container>
+
+          <!-- Uniform -->
+          <ng-container *ngIf="distType(v) === 'uniform'">
+            <div class="dist-param-field">
+              <label>Low</label>
+              <input type="number" [step]="getMeta(v).step"
+                [(ngModel)]="asUniform(v).params.low" />
+            </div>
+            <div class="dist-param-field">
+              <label>High</label>
+              <input type="number" [step]="getMeta(v).step"
+                [(ngModel)]="asUniform(v).params.high" />
+            </div>
+          </ng-container>
+
+          <!-- Exponential -->
+          <ng-container *ngIf="distType(v) === 'exponential'">
+            <div class="dist-param-field">
+              <label>Mean (scale)</label>
+              <input type="number" min="0" [step]="getMeta(v).step"
+                [(ngModel)]="asExponential(v).params.scale" />
+            </div>
+          </ng-container>
+
+        </div>
+      </div>
+    </div>
+
+    <div class="config-actions">
+      <button class="btn-primary" (click)="run()" [disabled]="loading">
+        {{ loading ? 'Simulating…' : 'Run simulation' }}
+      </button>
+      <button class="btn-secondary" (click)="resetDists()" [disabled]="loading">
+        Reset defaults
+      </button>
+    </div>
+  </div>
+
+  <!-- Error -->
+  <div class="error-banner" *ngIf="error">{{ error }}</div>
+
+  <!-- ─── Results ────────────────────────────────────────────────────────── -->
+  <ng-container *ngIf="result && !loading">
+
+    <!-- Outcome stat boxes -->
+    <div class="results-card">
+      <h2>Outcomes after {{ n }} years — {{ k }} trials</h2>
+
+      <div class="outcome-grid">
+
+        <div class="outcome-stat outcome-stat--gain">
+          <span class="outcome-pct">{{ formatPct(result.outcome_pct.net_gain) }}</span>
+          <span class="outcome-label">Net gain</span>
+          <span class="outcome-count">{{ result.outcome_counts.net_gain.toLocaleString() }} paths</span>
+          <span class="outcome-desc">Final wealth exceeds W₀</span>
+        </div>
+
+        <div class="outcome-stat outcome-stat--loss">
+          <span class="outcome-pct">{{ formatPct(result.outcome_pct.loss_solvent) }}</span>
+          <span class="outcome-label">Loss — solvent</span>
+          <span class="outcome-count">{{ result.outcome_counts.loss_solvent.toLocaleString() }} paths</span>
+          <span class="outcome-desc">Wealth reduced but above zero</span>
+        </div>
+
+        <div class="outcome-stat outcome-stat--ruin">
+          <span class="outcome-pct">{{ formatPct(result.outcome_pct.ruin) }}</span>
+          <span class="outcome-label">Ruin</span>
+          <span class="outcome-count">{{ result.outcome_counts.ruin.toLocaleString() }} paths</span>
+          <span class="outcome-desc">Wealth hit zero at some point</span>
+        </div>
+
+      </div>
+
+      <!-- Secondary stats -->
+      <div class="secondary-stats">
+        <div class="secondary-stat">
+          <span class="sec-label">Surviving paths</span>
+          <span class="sec-value">{{ result.surviving_paths.toLocaleString() }}</span>
+        </div>
+        <div class="secondary-stat">
+          <span class="sec-label">Median final wealth</span>
+          <span class="sec-value">{{ formatW(result.median_final_W) }}</span>
+        </div>
+        <div class="secondary-stat">
+          <span class="sec-label">Mean years to ruin</span>
+          <span class="sec-value">{{ formatYears(result.mean_years_to_ruin) }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Fan chart -->
+    <div class="chart-card">
+      <div class="card-header">
+        <h2>Wealth trajectory — surviving paths</h2>
+        <p class="card-hint">
+          Percentile bands computed over surviving paths only.
+          Paths that hit ruin are excluded from that year forward.
+        </p>
+      </div>
+      <div class="chart-wrapper">
+        <canvas
+          baseChart
+          [type]="'line'"
+          [data]="chartData"
+          [options]="chartOptions"
+        ></canvas>
+      </div>
+    </div>
+
+  </ng-container>
+
+</div>

@@ -59,11 +59,45 @@ export const routes: Routes = [
   },
   {
     path: 'stochastic',
-    loadComponent: () =>
-      import('./features/mode-home/mode-home.component').then(
-        (m) => m.ModeHomeComponent
-      ),
-    data: { mode: 'stochastic' },
+    children: [
+      {
+        path: '',
+        loadComponent: () =>
+          import('./features/mode-home/mode-home.component').then(
+            (m) => m.ModeHomeComponent
+          ),
+        data: { mode: 'stochastic' },
+      },
+      {
+        path: 'naive',
+        children: [
+          {
+            path: 'tier-1',
+            loadComponent: () =>
+              import('./features/stochastic/naive/stochastic-naive.component').then(
+                (m) => m.StochasticNaiveComponent
+              ),
+            data: { tier: 1 },
+          },
+          {
+            path: 'tier-2',
+            loadComponent: () =>
+              import('./features/stochastic/naive/stochastic-naive.component').then(
+                (m) => m.StochasticNaiveComponent
+              ),
+            data: { tier: 2 },
+          },
+          {
+            path: 'tier-3',
+            loadComponent: () =>
+              import('./features/stochastic/naive/stochastic-naive.component').then(
+                (m) => m.StochasticNaiveComponent
+              ),
+            data: { tier: 3 },
+          },
+        ],
+      },
+    ],
   },
   {
     path: '**',

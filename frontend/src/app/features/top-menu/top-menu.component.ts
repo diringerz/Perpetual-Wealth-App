@@ -34,7 +34,8 @@ export class TopMenuComponent {
       label: 'Stochastic',
       route: '/stochastic',
       children: [
-        { label: 'Overview', route: '/stochastic' },
+        { label: 'Overview', route: '/stochastic'
+      },
       ],
     },
   ];

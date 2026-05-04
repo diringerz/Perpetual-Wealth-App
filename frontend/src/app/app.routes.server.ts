@@ -18,6 +18,18 @@ export const serverRoutes: ServerRoute[] = [
     renderMode: RenderMode.Client,
   },
   {
+    path: 'stochastic/naive/tier-1',
+    renderMode: RenderMode.Client,
+  },
+  {
+    path: 'stochastic/naive/tier-2',
+    renderMode: RenderMode.Client,
+  },
+  {
+    path: 'stochastic/naive/tier-3',
+    renderMode: RenderMode.Client,
+  },
+  {
     path: '**',
     renderMode: RenderMode.Server,
   },
