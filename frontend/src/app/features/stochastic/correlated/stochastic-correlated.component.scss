@@ -1,0 +1,466 @@
+@use '../../../../styles/variables' as v;
+@use '../../../../styles/mixins' as m;
+
+.correlated-page {
+  max-width:      v.$max-width;
+  display:        flex;
+  flex-direction: column;
+  gap:            v.$space-6;
+}
+
+// ---------------------------------------------------------------------------
+// Header
+// ---------------------------------------------------------------------------
+
+.page-header { @include m.page-header; margin-bottom: 0; }
+
+.header-nav {
+  display:       flex;
+  align-items:   center;
+  gap:           v.$space-2;
+  margin-bottom: v.$space-2;
+}
+
+.back-link {
+  font-size:       v.$text-sm;
+  color:           v.$teal;
+  text-decoration: none;
+  font-weight:     v.$weight-medium;
+  &:hover { text-decoration: underline; }
+}
+
+.sep { color: v.$text-muted; font-size: v.$text-sm; }
+
+// ---------------------------------------------------------------------------
+// Cards
+// ---------------------------------------------------------------------------
+
+.config-card, .results-card, .chart-card {
+  @include m.card;
+  h2 { @include m.section-heading; }
+}
+
+.config-card--advanced {
+  border-style: dashed;
+  background:   v.$off-white;
+}
+
+.section-hint {
+  font-size:     v.$text-sm;
+  color:         v.$text-secondary;
+  margin-bottom: v.$space-5;
+  line-height:   v.$leading-relaxed;
+}
+
+// ---------------------------------------------------------------------------
+// Settings row
+// ---------------------------------------------------------------------------
+
+.settings-row {
+  display:               grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap:                   v.$space-4;
+}
+
+// ---------------------------------------------------------------------------
+// Shared param field
+// ---------------------------------------------------------------------------
+
+.param-field {
+  display:        flex;
+  flex-direction: column;
+  gap:            v.$space-1;
+
+  label { @include m.label-base; font-size: v.$text-xs; }
+
+  input {
+    @include m.input-base;
+    font-family: v.$font-mono;
+    font-size:   v.$text-sm;
+    padding:     v.$space-2;
+  }
+
+  .hint {
+    font-size:   v.$text-xs;
+    color:       v.$text-muted;
+    font-weight: v.$weight-normal;
+    margin-left: v.$space-1;
+  }
+}
+
+.param-input-row {
+  display:     flex;
+  align-items: center;
+  gap:         v.$space-2;
+
+  input {
+    @include m.input-base;
+    flex:        1;
+    font-family: v.$font-mono;
+    font-size:   v.$text-sm;
+    padding:     v.$space-2;
+  }
+
+  .unit {
+    font-size:   v.$text-xs;
+    color:       v.$text-muted;
+    min-width:   24px;
+    flex-shrink: 0;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Primary parameters
+// ---------------------------------------------------------------------------
+
+.primary-grid {
+  display:        flex;
+  flex-direction: column;
+  gap:            v.$space-4;
+}
+
+.primary-param {
+  display:               grid;
+  grid-template-columns: 1fr 180px;
+  align-items:           center;
+  gap:                   v.$space-6;
+  padding:               v.$space-3 v.$space-4;
+  background:            v.$off-white;
+  border:                1px solid v.$border-light;
+  border-radius:         v.$input-radius;
+
+  @media (max-width: 640px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.primary-label {
+  display:        flex;
+  flex-direction: column;
+  gap:            v.$space-1;
+}
+
+.primary-name {
+  font-size:   v.$text-sm;
+  font-weight: v.$weight-semi;
+  color:       v.$navy;
+}
+
+.primary-desc {
+  font-size:   v.$text-xs;
+  color:       v.$text-muted;
+  line-height: v.$leading-relaxed;
+}
+
+// ---------------------------------------------------------------------------
+// Regime grid
+// ---------------------------------------------------------------------------
+
+.regime-grid {
+  display:               grid;
+  grid-template-columns: 1fr 1fr 200px;
+  gap:                   v.$space-6;
+
+  @media (max-width: 800px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.regime-col {
+  display:        flex;
+  flex-direction: column;
+  gap:            v.$space-3;
+  padding:        v.$space-4;
+  border-radius:  v.$card-radius;
+  border:         2px solid v.$border-light;
+
+  &--liberal      { border-color: #4f8ef7; background: rgba(79,142,247,0.04); }
+  &--conservative { border-color: #10b981; background: rgba(16,185,129,0.04); }
+  &--initial      { border-color: v.$border-light; }
+}
+
+.regime-heading {
+  font-size:      v.$text-sm;
+  font-weight:    v.$weight-semi;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom:  v.$space-2;
+
+  &--liberal      { color: #4f8ef7; }
+  &--conservative { color: #10b981; }
+}
+
+.regime-radio-group {
+  display:        flex;
+  flex-direction: column;
+  gap:            v.$space-3;
+  margin-top:     v.$space-2;
+}
+
+.regime-radio {
+  display:     flex;
+  align-items: center;
+  gap:         v.$space-2;
+  cursor:      pointer;
+}
+
+.regime-radio-label {
+  font-size:   v.$text-sm;
+  font-weight: v.$weight-medium;
+
+  &--liberal      { color: #4f8ef7; }
+  &--conservative { color: #10b981; }
+}
+
+// ---------------------------------------------------------------------------
+// Advanced
+// ---------------------------------------------------------------------------
+
+.advanced-toggle {
+  @include m.btn-base;
+  background:   transparent;
+  border:       none;
+  color:        v.$text-secondary;
+  font-size:    v.$text-sm;
+  font-weight:  v.$weight-medium;
+  padding:      0;
+  cursor:       pointer;
+
+  &:hover { color: v.$navy; }
+}
+
+.advanced-content {
+  margin-top: v.$space-4;
+  display:    flex;
+  flex-direction: column;
+  gap:        v.$space-5;
+}
+
+.advanced-section {
+  h4 {
+    font-size:     v.$text-xs;
+    font-weight:   v.$weight-semi;
+    color:         v.$text-secondary;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: v.$space-3;
+  }
+}
+
+.matrix-grid {
+  display:               grid;
+  grid-template-columns: 80px repeat(3, 1fr);
+  gap:                   v.$space-2;
+  align-items:           center;
+}
+
+.matrix-row-label {
+  font-size:   v.$text-xs;
+  color:       v.$text-muted;
+  font-family: v.$font-mono;
+}
+
+.matrix-field {
+  display:        flex;
+  flex-direction: column;
+  gap:            2px;
+
+  label { font-size: v.$text-xs; color: v.$text-muted; font-family: v.$font-mono; }
+
+  input {
+    @include m.input-base;
+    font-family: v.$font-mono;
+    font-size:   v.$text-xs;
+    padding:     v.$space-1 v.$space-2;
+  }
+}
+
+.advanced-row {
+  display: flex;
+  gap:     v.$space-4;
+  flex-wrap: wrap;
+
+  .param-field { min-width: 120px; }
+}
+
+// ---------------------------------------------------------------------------
+// Form actions
+// ---------------------------------------------------------------------------
+
+.form-actions {
+  display: flex;
+  gap:     v.$space-3;
+}
+
+// ---------------------------------------------------------------------------
+// Outcome stats (reuse naive pattern)
+// ---------------------------------------------------------------------------
+
+.outcome-grid {
+  display:               grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap:                   v.$space-4;
+  margin-bottom:         v.$space-6;
+
+  @media (max-width: 640px) { grid-template-columns: 1fr; }
+}
+
+.outcome-stat {
+  @include m.card;
+  display:         flex;
+  flex-direction:  column;
+  align-items:     center;
+  text-align:      center;
+  gap:             v.$space-1;
+  padding:         v.$space-5;
+  border-width:    2px;
+
+  &--gain  { border-color: v.$teal;    background: v.$teal-faint; }
+  &--loss  { border-color: v.$warning; background: v.$warning-faint; }
+  &--ruin  { border-color: v.$danger;  background: v.$danger-faint; }
+}
+
+.outcome-pct {
+  font-size:   v.$text-3xl;
+  font-weight: v.$weight-bold;
+  line-height: 1;
+
+  .outcome-stat--gain & { color: v.$teal; }
+  .outcome-stat--loss & { color: v.$warning; }
+  .outcome-stat--ruin & { color: v.$danger; }
+}
+
+.outcome-label {
+  font-size: v.$text-xs; font-weight: v.$weight-semi;
+  text-transform: uppercase; letter-spacing: 0.05em; color: v.$text-secondary;
+}
+
+.outcome-count { font-family: v.$font-mono; font-size: v.$text-sm; color: v.$text-secondary; }
+.outcome-desc  { font-size: v.$text-xs; color: v.$text-muted; line-height: v.$leading-relaxed; }
+
+.secondary-stats {
+  display:               grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap:                   v.$space-4;
+  padding-top:           v.$space-4;
+  border-top:            1px solid v.$border-light;
+}
+
+.secondary-stat { display: flex; flex-direction: column; gap: v.$space-1; }
+
+.sec-label {
+  font-size: v.$text-xs; color: v.$text-muted;
+  text-transform: uppercase; letter-spacing: 0.05em; font-weight: v.$weight-medium;
+}
+
+.sec-value {
+  font-size: v.$text-xl; font-weight: v.$weight-bold;
+  color: v.$navy; font-family: v.$font-mono;
+}
+
+// ---------------------------------------------------------------------------
+// Charts
+// ---------------------------------------------------------------------------
+
+.chart-header {
+  margin-bottom: v.$space-4;
+  h2 { @include m.section-heading; margin-bottom: v.$space-1; padding: 0; border: none; font-size: v.$text-lg; }
+}
+
+.chart-hint { font-size: v.$text-xs; color: v.$text-muted; margin: 0; line-height: v.$leading-relaxed; }
+
+.chart-wrapper {
+  height: 380px;
+  canvas { width: 100% !important; height: 100% !important; }
+}
+
+// ---------------------------------------------------------------------------
+// Buttons
+// ---------------------------------------------------------------------------
+
+.btn-primary  { @include m.btn-primary;  font-size: v.$text-sm; padding: v.$space-3 v.$space-8; }
+.btn-secondary { @include m.btn-secondary; font-size: v.$text-sm; }
+
+.error-banner { @include m.banner(v.$danger-faint, v.$danger, v.$danger); }
+
+// ---------------------------------------------------------------------------
+// Regime comparison table
+// ---------------------------------------------------------------------------
+
+.regime-compare-card {
+  @include m.card;
+  h2 { @include m.section-heading; }
+}
+
+.regime-compare-grid {
+  display:               grid;
+  grid-template-columns: 220px 1fr 1fr;
+  border:                1px solid v.$border-light;
+  border-radius:         v.$input-radius;
+  overflow:              hidden;
+}
+
+.rc-cell {
+  padding:     v.$space-3 v.$space-4;
+  font-size:   v.$text-sm;
+  border-bottom: 1px solid v.$border-light;
+  border-right:  1px solid v.$border-light;
+  display:     flex;
+  align-items: center;
+
+  &:last-child,
+  &:nth-child(3n) { border-right: none; }
+}
+
+.rc-header {
+  font-weight:    v.$weight-semi;
+  font-size:      v.$text-xs;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color:          v.$text-secondary;
+  background:     v.$off-white;
+  flex-direction: column;
+  align-items:    center;
+  text-align:     center;
+  gap:            v.$space-1;
+
+  &--liberal      { color: #4f8ef7; background: rgba(79,142,247,0.06); }
+  &--conservative { color: #10b981; background: rgba(16,185,129,0.06); }
+}
+
+.rc-path-count {
+  font-family:    v.$font-mono;
+  font-size:      v.$text-xs;
+  font-weight:    v.$weight-normal;
+  color:          v.$text-muted;
+  text-transform: none;
+}
+
+.rc-row-label {
+  color:       v.$text-secondary;
+  font-size:   v.$text-xs;
+  background:  v.$off-white;
+}
+
+.rc-value {
+  font-family: v.$font-mono;
+  font-weight: v.$weight-semi;
+  color:       v.$navy;
+  justify-content: center;
+
+  &--gain { color: v.$teal; }
+  &--loss { color: v.$warning; }
+  &--ruin { color: v.$danger; }
+}
+
+.rc-section-start {
+  border-top: 2px solid v.$border;
+}
+
+.regime-stationary-note {
+  font-size:   v.$text-xs;
+  color:       v.$text-muted;
+  line-height: v.$leading-relaxed;
+  margin:      0;
+  font-style:  italic;
+}

@@ -97,6 +97,35 @@ export const routes: Routes = [
           },
         ],
       },
+      {
+        path: 'correlated',
+        children: [
+          {
+            path: 'tier-1',
+            loadComponent: () =>
+              import('./features/stochastic/correlated/stochastic-correlated.component').then(
+                (m) => m.StochasticCorrelatedComponent
+              ),
+            data: { tier: 1 },
+          },
+          {
+            path: 'tier-2',
+            loadComponent: () =>
+              import('./features/stochastic/correlated/stochastic-correlated.component').then(
+                (m) => m.StochasticCorrelatedComponent
+              ),
+            data: { tier: 2 },
+          },
+          {
+            path: 'tier-3',
+            loadComponent: () =>
+              import('./features/stochastic/correlated/stochastic-correlated.component').then(
+                (m) => m.StochasticCorrelatedComponent
+              ),
+            data: { tier: 3 },
+          },
+        ],
+      },
     ],
   },
   {

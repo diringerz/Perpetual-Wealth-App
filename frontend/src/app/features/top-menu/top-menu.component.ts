@@ -38,6 +38,9 @@ export class TopMenuComponent {
         { label: 'Naive — Tier 1',              route: '/stochastic/naive/tier-1' },
         { label: 'Naive — Tier 2',              route: '/stochastic/naive/tier-2' },
         { label: 'Naive — Tier 3',              route: '/stochastic/naive/tier-3' },
+        { label: 'Correlated — Tier 1',         route: '/stochastic/correlated/tier-1' },
+        { label: 'Correlated — Tier 2',         route: '/stochastic/correlated/tier-2' },
+        { label: 'Correlated — Tier 3',         route: '/stochastic/correlated/tier-3' },
       ],
     },
   ];

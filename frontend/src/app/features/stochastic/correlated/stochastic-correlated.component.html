@@ -1,0 +1,432 @@
+<div class="correlated-page">
+
+  <!-- Header -->
+  <div class="page-header">
+    <div class="header-nav">
+      <a routerLink="/stochastic" class="back-link">← Stochastic overview</a>
+      <span class="sep">·</span>
+      <a [routerLink]="'/deterministic/tier-' + tier" class="back-link">
+        Deterministic Tier {{ tier }}
+      </a>
+    </div>
+    <h1>Correlated Stochastic — Tier {{ tier }}</h1>
+    <p class="page-subtitle">
+      VAR(1) macro dynamics · Markov regime switching · Student-t fat tails
+    </p>
+  </div>
+
+  <!-- ─── Simulation settings ─────────────────────────────────────────── -->
+  <div class="config-card">
+    <h2>Simulation settings</h2>
+    <div class="settings-row">
+      <div class="param-field">
+        <label>Starting wealth W₀ ($)</label>
+        <input type="number" min="1000" step="1000" [(ngModel)]="W0" />
+      </div>
+      <div class="param-field">
+        <label>Trials (K) <span class="hint">max 10,000</span></label>
+        <input type="number" min="100" max="10000" step="100" [(ngModel)]="k" />
+      </div>
+      <div class="param-field">
+        <label>Years (N) <span class="hint">max 1,000</span></label>
+        <input type="number" min="1" max="1000" step="1" [(ngModel)]="n" />
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── Primary parameters ──────────────────────────────────────────── -->
+  <div class="config-card">
+    <h2>Primary parameters</h2>
+    <p class="section-hint">
+      These five parameters have the largest impact on simulation outcomes.
+      The VAR dynamics and regime switching handle the rest automatically.
+    </p>
+
+    <div class="primary-grid">
+
+      <div class="primary-param">
+        <div class="primary-label">
+          <span class="primary-name">Mean inflation π*</span>
+          <span class="primary-desc">Long-run inflation target. Drives the Taylor Rule — higher π* raises i and squeezes real returns.</span>
+        </div>
+        <div class="param-input-row">
+          <input type="number" min="0" max="20" step="0.1" [(ngModel)]="varParams.mu_pi" />
+          <span class="unit">%</span>
+        </div>
+      </div>
+
+      <div class="primary-param">
+        <div class="primary-label">
+          <span class="primary-name">Mean return rate i*</span>
+          <span class="primary-desc">Long-run nominal return on invested wealth. Key driver of solvency boundary.</span>
+        </div>
+        <div class="param-input-row">
+          <input type="number" min="0" max="50" step="0.1" [(ngModel)]="varParams.mu_i" />
+          <span class="unit">%</span>
+        </div>
+      </div>
+
+      <div class="primary-param">
+        <div class="primary-label">
+          <span class="primary-name">Mean annual consumption C₀*</span>
+          <span class="primary-desc">Long-run average annual spending. The VAR centres consumption around this value.</span>
+        </div>
+        <div class="param-input-row">
+          <input type="number" min="1000" step="1000" [(ngModel)]="varParams.mu_C0" />
+          <span class="unit">$</span>
+        </div>
+      </div>
+
+      <div class="primary-param">
+        <div class="primary-label">
+          <span class="primary-name">Consumption volatility σ_C</span>
+          <span class="primary-desc">Year-to-year variation in annual spending. Biggest driver of ruin probability.</span>
+        </div>
+        <div class="param-input-row">
+          <input type="number" min="0" step="500" [(ngModel)]="varParams.sigma_C0" />
+          <span class="unit">$</span>
+        </div>
+      </div>
+
+      <div class="primary-param">
+        <div class="primary-label">
+          <span class="primary-name">Tail risk ν</span>
+          <span class="primary-desc">Student-t degrees of freedom. Lower = fatter tails = more extreme events. 5 matches historical equity returns.</span>
+        </div>
+        <div class="param-input-row">
+          <input type="number" min="2" max="30" step="0.5" [(ngModel)]="varParams.nu" />
+          <span class="unit">df</span>
+        </div>
+      </div>
+
+      <div class="primary-param">
+        <div class="primary-label">
+          <span class="primary-name">Inflation-consumption sensitivity β</span>
+          <span class="primary-desc">How much an inflation surprise squeezes consumption. 0 = no link, 1 = full pass-through.</span>
+        </div>
+        <div class="param-input-row">
+          <input type="number" min="0" max="1" step="0.05" [(ngModel)]="varParams.beta" />
+          <span class="unit">0–1</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ─── Regime parameters ───────────────────────────────────────────── -->
+  <div class="config-card">
+    <h2>Government regime</h2>
+    <p class="section-hint">
+      Tax rates and welfare jump when governments change.
+      The Markov chain controls how often regimes switch — default is ~4 year cycles.
+    </p>
+
+    <div class="regime-grid">
+
+      <div class="regime-col regime-col--liberal">
+        <h3 class="regime-heading regime-heading--liberal">Liberal</h3>
+        <div class="param-field">
+          <label>Tax rate mean</label>
+          <div class="param-input-row">
+            <input type="number" min="0" max="99" step="1" [(ngModel)]="regimeParams.T_mean_liberal" />
+            <span class="unit">%</span>
+          </div>
+        </div>
+        <div class="param-field">
+          <label>Tax rate std dev</label>
+          <div class="param-input-row">
+            <input type="number" min="0" step="0.5" [(ngModel)]="regimeParams.T_std_liberal" />
+            <span class="unit">%</span>
+          </div>
+        </div>
+        <div class="param-field" *ngIf="tier >= 3">
+          <label>Welfare mean ($)</label>
+          <input type="number" min="0" step="500" [(ngModel)]="regimeParams.S0_mean_liberal" />
+        </div>
+        <div class="param-field" *ngIf="tier >= 3">
+          <label>Welfare std dev ($)</label>
+          <input type="number" min="0" step="500" [(ngModel)]="regimeParams.S0_std_liberal" />
+        </div>
+        <div class="param-field">
+          <label>Prob. stay Liberal</label>
+          <div class="param-input-row">
+            <input type="number" min="0" max="100" step="5" [(ngModel)]="regimeParams.p_stay_liberal" />
+            <span class="unit">%</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="regime-col regime-col--conservative">
+        <h3 class="regime-heading regime-heading--conservative">Conservative</h3>
+        <div class="param-field">
+          <label>Tax rate mean</label>
+          <div class="param-input-row">
+            <input type="number" min="0" max="99" step="1" [(ngModel)]="regimeParams.T_mean_conservative" />
+            <span class="unit">%</span>
+          </div>
+        </div>
+        <div class="param-field">
+          <label>Tax rate std dev</label>
+          <div class="param-input-row">
+            <input type="number" min="0" step="0.5" [(ngModel)]="regimeParams.T_std_conservative" />
+            <span class="unit">%</span>
+          </div>
+        </div>
+        <div class="param-field" *ngIf="tier >= 3">
+          <label>Welfare mean ($)</label>
+          <input type="number" min="0" step="500" [(ngModel)]="regimeParams.S0_mean_conservative" />
+        </div>
+        <div class="param-field" *ngIf="tier >= 3">
+          <label>Welfare std dev ($)</label>
+          <input type="number" min="0" step="500" [(ngModel)]="regimeParams.S0_std_conservative" />
+        </div>
+        <div class="param-field">
+          <label>Prob. stay Conservative</label>
+          <div class="param-input-row">
+            <input type="number" min="0" max="100" step="5" [(ngModel)]="regimeParams.p_stay_conservative" />
+            <span class="unit">%</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="regime-col regime-col--initial">
+        <h3 class="regime-heading">Starting regime</h3>
+        <p class="regime-stationary-note">
+          Each path starts in a regime sampled from the Markov chain's
+          stationary distribution — determined by your stay probabilities above.
+          This ensures the regime comparison is unbiased.
+        </p>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ─── Advanced parameters (collapsed) ────────────────────────────── -->
+  <div class="config-card config-card--advanced">
+    <button class="advanced-toggle" (click)="advancedOpen = !advancedOpen">
+      {{ advancedOpen ? '▾' : '▸' }} Advanced — VAR(1) dynamics
+    </button>
+
+    <div class="advanced-content" *ngIf="advancedOpen">
+      <p class="section-hint">
+        These parameters control the cross-variable dynamics of the macro state.
+        Only modify if you have a specific calibration in mind.
+      </p>
+
+      <div class="advanced-section">
+        <h4>A matrix — mean-reversion coefficients</h4>
+        <div class="matrix-grid">
+          <div class="matrix-row-label">π equation</div>
+          <div class="matrix-field"><label>a_pp</label><input type="number" step="0.01" [(ngModel)]="varParams.a_pp" /></div>
+          <div class="matrix-field"><label>a_pi</label><input type="number" step="0.01" [(ngModel)]="varParams.a_pi" /></div>
+          <div class="matrix-field"><label>a_pC</label><input type="number" step="0.01" [(ngModel)]="varParams.a_pC" /></div>
+
+          <div class="matrix-row-label">i equation</div>
+          <div class="matrix-field"><label>a_ip</label><input type="number" step="0.01" [(ngModel)]="varParams.a_ip" /></div>
+          <div class="matrix-field"><label>a_ii</label><input type="number" step="0.01" [(ngModel)]="varParams.a_ii" /></div>
+          <div class="matrix-field"><label>a_iC</label><input type="number" step="0.01" [(ngModel)]="varParams.a_iC" /></div>
+
+          <div class="matrix-row-label">C₀ equation</div>
+          <div class="matrix-field"><label>a_Cp</label><input type="number" step="0.01" [(ngModel)]="varParams.a_Cp" /></div>
+          <div class="matrix-field"><label>a_Ci</label><input type="number" step="0.01" [(ngModel)]="varParams.a_Ci" /></div>
+          <div class="matrix-field"><label>a_CC</label><input type="number" step="0.01" [(ngModel)]="varParams.a_CC" /></div>
+        </div>
+      </div>
+
+      <div class="advanced-section">
+        <h4>Shock volatilities</h4>
+        <div class="advanced-row">
+          <div class="param-field">
+            <label>σ_π (%)</label>
+            <input type="number" min="0" step="0.1" [(ngModel)]="varParams.sigma_pi" />
+          </div>
+          <div class="param-field">
+            <label>σ_i (%)</label>
+            <input type="number" min="0" step="0.1" [(ngModel)]="varParams.sigma_i" />
+          </div>
+        </div>
+      </div>
+
+      <div class="advanced-section">
+        <h4>Shock correlations</h4>
+        <div class="advanced-row">
+          <div class="param-field">
+            <label>ρ(π, i)</label>
+            <input type="number" min="-1" max="1" step="0.05" [(ngModel)]="varParams.rho_pi_i" />
+          </div>
+          <div class="param-field">
+            <label>ρ(π, C₀)</label>
+            <input type="number" min="-1" max="1" step="0.05" [(ngModel)]="varParams.rho_pi_C0" />
+          </div>
+          <div class="param-field">
+            <label>ρ(i, C₀)</label>
+            <input type="number" min="-1" max="1" step="0.05" [(ngModel)]="varParams.rho_i_C0" />
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Actions -->
+  <div class="form-actions">
+    <button class="btn-primary" (click)="run()" [disabled]="loading">
+      {{ loading ? 'Simulating…' : 'Run simulation' }}
+    </button>
+    <button class="btn-secondary" (click)="resetDefaults()" [disabled]="loading">
+      Reset defaults
+    </button>
+  </div>
+
+  <!-- Error -->
+  <div class="error-banner" *ngIf="error">{{ error }}</div>
+
+  <!-- ─── Results ─────────────────────────────────────────────────────── -->
+  <ng-container *ngIf="result && !loading">
+
+    <!-- Outcome stats -->
+    <div class="results-card">
+      <h2>Outcomes — {{ k }} trials over {{ n }} years</h2>
+
+      <div class="outcome-grid">
+        <div class="outcome-stat outcome-stat--gain">
+          <span class="outcome-pct">{{ formatPct(result.outcome_pct.net_gain) }}</span>
+          <span class="outcome-label">Net gain</span>
+          <span class="outcome-count">{{ pathLabel(result.outcome_counts.net_gain) }} paths</span>
+          <span class="outcome-desc">Final wealth exceeds W₀</span>
+        </div>
+        <div class="outcome-stat outcome-stat--loss">
+          <span class="outcome-pct">{{ formatPct(result.outcome_pct.loss_solvent) }}</span>
+          <span class="outcome-label">Loss — solvent</span>
+          <span class="outcome-count">{{ pathLabel(result.outcome_counts.loss_solvent) }} paths</span>
+          <span class="outcome-desc">Wealth reduced but above zero</span>
+        </div>
+        <div class="outcome-stat outcome-stat--ruin">
+          <span class="outcome-pct">{{ formatPct(result.outcome_pct.ruin) }}</span>
+          <span class="outcome-label">Ruin</span>
+          <span class="outcome-count">{{ pathLabel(result.outcome_counts.ruin) }} paths</span>
+          <span class="outcome-desc">Hit zero at some point</span>
+        </div>
+      </div>
+
+      <div class="secondary-stats">
+        <div class="secondary-stat">
+          <span class="sec-label">Surviving paths</span>
+          <span class="sec-value">{{ pathLabel(result.surviving_paths) }}</span>
+        </div>
+        <div class="secondary-stat">
+          <span class="sec-label">Median final wealth</span>
+          <span class="sec-value">{{ formatW(result.median_final_W) }}</span>
+        </div>
+        <div class="secondary-stat">
+          <span class="sec-label">Mean years to ruin</span>
+          <span class="sec-value">{{ formatYears(result.mean_years_to_ruin) }}</span>
+        </div>
+        <div class="secondary-stat">
+          <span class="sec-label">Liberal-majority paths</span>
+          <span class="sec-value">{{ pathLabel(result.fan_liberal.path_count) }}</span>
+        </div>
+        <div class="secondary-stat">
+          <span class="sec-label">Conservative-majority paths</span>
+          <span class="sec-value">{{ pathLabel(result.fan_conservative.path_count) }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Fan chart -->
+    <div class="chart-card">
+      <div class="chart-header">
+        <h2>Wealth trajectories by regime majority</h2>
+        <p class="chart-hint">
+          Blue = paths that spent majority of years in Liberal regime.
+          Green = Conservative majority. Grey = overall median.
+          Bands show 5th–95th percentile of surviving paths.
+        </p>
+      </div>
+      <div class="chart-wrapper">
+        <canvas baseChart [type]="'line'"
+          [data]="fanChartData" [options]="fanChartOptions"></canvas>
+      </div>
+    </div>
+
+    <!-- Regime comparison -->
+    <div class="regime-compare-card">
+      <h2>Outcome comparison by majority regime</h2>
+      <p class="chart-hint">
+        Paths are split by the regime they spent the majority of years in.
+        All wealth metrics are computed over surviving paths only.
+      </p>
+
+      <div class="regime-compare-grid">
+
+        <!-- Headers -->
+        <div class="rc-cell rc-header"></div>
+        <div class="rc-cell rc-header rc-header--liberal">
+          Liberal majority
+          <span class="rc-path-count">{{ result!.regime_liberal.path_count.toLocaleString() }} paths</span>
+        </div>
+        <div class="rc-cell rc-header rc-header--conservative">
+          Conservative majority
+          <span class="rc-path-count">{{ result!.regime_conservative.path_count.toLocaleString() }} paths</span>
+        </div>
+
+        <!-- Outcome rates -->
+        <div class="rc-cell rc-row-label rc-section-start">Net gain</div>
+        <div class="rc-cell rc-value rc-section-start rc-value--gain">{{ formatPct(result!.regime_liberal.pct_net_gain) }}</div>
+        <div class="rc-cell rc-value rc-section-start rc-value--gain">{{ formatPct(result!.regime_conservative.pct_net_gain) }}</div>
+
+        <div class="rc-cell rc-row-label">Loss — solvent</div>
+        <div class="rc-cell rc-value rc-value--loss">{{ formatPct(result!.regime_liberal.pct_loss_solvent) }}</div>
+        <div class="rc-cell rc-value rc-value--loss">{{ formatPct(result!.regime_conservative.pct_loss_solvent) }}</div>
+
+        <div class="rc-cell rc-row-label">Ruin</div>
+        <div class="rc-cell rc-value rc-value--ruin">{{ formatPct(result!.regime_liberal.pct_ruin) }}</div>
+        <div class="rc-cell rc-value rc-value--ruin">{{ formatPct(result!.regime_conservative.pct_ruin) }}</div>
+
+        <!-- Wealth metrics -->
+        <div class="rc-cell rc-row-label rc-section-start">Mean final wealth</div>
+        <div class="rc-cell rc-value rc-section-start">{{ formatW(result!.regime_liberal.mean_final_W) }}</div>
+        <div class="rc-cell rc-value rc-section-start">{{ formatW(result!.regime_conservative.mean_final_W) }}</div>
+
+        <div class="rc-cell rc-row-label">Median final wealth</div>
+        <div class="rc-cell rc-value">{{ formatW(result!.regime_liberal.median_final_W) }}</div>
+        <div class="rc-cell rc-value">{{ formatW(result!.regime_conservative.median_final_W) }}</div>
+
+        <div class="rc-cell rc-row-label">10th pct wealth (downside)</div>
+        <div class="rc-cell rc-value">{{ formatW(result!.regime_liberal.p10_final_W) }}</div>
+        <div class="rc-cell rc-value">{{ formatW(result!.regime_conservative.p10_final_W) }}</div>
+
+        <div class="rc-cell rc-row-label">90th pct wealth (upside)</div>
+        <div class="rc-cell rc-value">{{ formatW(result!.regime_liberal.p90_final_W) }}</div>
+        <div class="rc-cell rc-value">{{ formatW(result!.regime_conservative.p90_final_W) }}</div>
+
+        <div class="rc-cell rc-row-label">Mean wealth growth</div>
+        <div class="rc-cell rc-value"
+          [class.rc-value--gain]="(result!.regime_liberal.mean_wealth_growth_pct ?? 0) > 0"
+          [class.rc-value--ruin]="(result!.regime_liberal.mean_wealth_growth_pct ?? 0) < 0">
+          {{ result!.regime_liberal.mean_wealth_growth_pct !== null
+              ? formatPct(result!.regime_liberal.mean_wealth_growth_pct)
+              : 'N/A' }}
+        </div>
+        <div class="rc-cell rc-value"
+          [class.rc-value--gain]="(result!.regime_conservative.mean_wealth_growth_pct ?? 0) > 0"
+          [class.rc-value--ruin]="(result!.regime_conservative.mean_wealth_growth_pct ?? 0) < 0">
+          {{ result!.regime_conservative.mean_wealth_growth_pct !== null
+              ? formatPct(result!.regime_conservative.mean_wealth_growth_pct)
+              : 'N/A' }}
+        </div>
+
+        <!-- Ruin metrics -->
+        <div class="rc-cell rc-row-label rc-section-start">Mean years to ruin</div>
+        <div class="rc-cell rc-value rc-section-start">{{ formatYears(result!.regime_liberal.mean_years_to_ruin) }}</div>
+        <div class="rc-cell rc-value rc-section-start">{{ formatYears(result!.regime_conservative.mean_years_to_ruin) }}</div>
+
+        <div class="rc-cell rc-row-label">Median years to ruin</div>
+        <div class="rc-cell rc-value">{{ formatYears(result!.regime_liberal.median_years_to_ruin) }}</div>
+        <div class="rc-cell rc-value">{{ formatYears(result!.regime_conservative.median_years_to_ruin) }}</div>
+
+      </div>
+    </div>
+
+  </ng-container>
+
+</div>

@@ -30,6 +30,18 @@ export const serverRoutes: ServerRoute[] = [
     renderMode: RenderMode.Client,
   },
   {
+    path: 'stochastic/correlated/tier-1',
+    renderMode: RenderMode.Client,
+  },
+  {
+    path: 'stochastic/correlated/tier-2',
+    renderMode: RenderMode.Client,
+  },
+  {
+    path: 'stochastic/correlated/tier-3',
+    renderMode: RenderMode.Client,
+  },
+  {
     path: '**',
     renderMode: RenderMode.Server,
   },
