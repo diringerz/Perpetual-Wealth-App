@@ -41,17 +41,32 @@
     max-width:     720px;
 
     em {
-      font-family: v.$font-mono;
-      font-style:  normal;
-      color:       v.$teal;
-      font-size:   0.9em;
-      background:  v.$teal-faint;
-      padding:     2px 6px;
+      font-family:   v.$font-mono;
+      font-style:    normal;
+      color:         v.$teal;
+      font-size:     0.9em;
+      background:    v.$teal-faint;
+      padding:       2px 6px;
       border-radius: 4px;
     }
 
     &:last-child { margin-bottom: 0; }
   }
+}
+
+.home-disclaimer {
+  font-size:     v.$text-sm;
+  color:         v.$text-secondary;
+  line-height:   v.$leading-relaxed;
+  max-width:     720px;
+  margin-top:    v.$space-6;
+  margin-bottom: 0;
+  padding:       v.$space-4 v.$space-5;
+  border-radius: 6px;
+  border:        1px solid v.$border;
+  border-left:   3px solid v.$warning;
+  background:    v.$warning-faint;
+  color:         v.$text-primary;
 }
 
 .home-cards {
@@ -63,15 +78,15 @@
 .mode-card {
   @include m.card;
   @include m.card-hover;
-  display:        flex;
-  flex-direction: column;
-  gap:            v.$space-3;
-  padding:        v.$space-8;
-  text-decoration:none;
-  border-top:     3px solid v.$navy;
-  transition:     box-shadow v.$transition-normal,
-                  border-color v.$transition-normal,
-                  transform v.$transition-normal;
+  display:         flex;
+  flex-direction:  column;
+  gap:             v.$space-3;
+  padding:         v.$space-8;
+  text-decoration: none;
+  border-top:      3px solid v.$navy;
+  transition:      box-shadow v.$transition-normal,
+                   border-color v.$transition-normal,
+                   transform v.$transition-normal;
 
   &:hover {
     border-top-color: v.$teal;
@@ -79,9 +94,9 @@
   }
 
   h2 {
-    font-size:  v.$text-xl;
-    color:      v.$navy;
-    margin:     0;
+    font-size: v.$text-xl;
+    color:     v.$navy;
+    margin:    0;
   }
 
   p {

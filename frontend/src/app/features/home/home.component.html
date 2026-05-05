@@ -8,25 +8,38 @@
 
   <div class="home-body">
     <p>
-      Perpetual Wealth is a precision financial modelling tool that answers a
+      Perpetual Wealth is a fun, hypothetical modelling tool that explores a
       deceptively simple question: given your spending, your investment returns,
-      your tax rate, and inflation, how much initial wealth do you need so that
-      your portfolio sustains you indefinitely — with net wealth neither growing
-      nor shrinking?
+      your tax rate, and inflation, how much initial wealth would you need so
+      that your portfolio sustains you indefinitely — with net wealth neither
+      growing nor shrinking?
     </p>
     <p>
-      Unlike rule-of-thumb calculators, this tool uses exact symbolic
-      mathematics. The real after-tax return rate is computed precisely as
-      <em>r = (1 + i(1 − T)) / (1 + π) − 1</em>, not approximated. Closed-form
-      solutions to the governing differential equations give you exact wealth
-      trajectories over time. Sensitivity analysis tells you, to the dollar,
-      how much each variable affects your required initial wealth.
+      It operates in a simplified, idealised world. Parameters are assumed
+      constant, compounding is instantaneous, and taxes are a flat rate on
+      returns. Real life is messier — markets fluctuate, tax codes are
+      complicated, and governments change. This tool is not a financial plan.
+      It is a mathematical thought experiment.
+    </p>
+    <p>
+      Within that idealised world, the mathematics is exact. The real after-tax
+      return rate is computed precisely as
+      <em>r = (1 + i(1 − T)) / (1 + π) − 1</em>, not approximated.
+      Closed-form solutions to the governing differential equations give exact
+      wealth trajectories. Sensitivity analysis shows, to the dollar, how each
+      variable affects the required initial wealth under the model's assumptions.
     </p>
     <p>
       Choose a mode below to begin. Deterministic models give exact answers
-      under fixed assumptions. Stochastic models — coming soon — will introduce
-      randomness to return rates and simulate probability distributions of
-      outcomes.
+      under fixed assumptions. Stochastic models introduce year-to-year
+      randomness and simulate probability distributions of outcomes across
+      thousands of paths.
+    </p>
+
+    <p class="home-disclaimer">
+      ⚠️ For entertainment and educational purposes only. Nothing on this site
+      constitutes financial advice. Always consult a qualified financial adviser
+      before making investment or retirement decisions.
     </p>
   </div>
 
@@ -34,18 +47,18 @@
     <a class="mode-card" routerLink="/deterministic">
       <h2>Deterministic</h2>
       <p>
-        Fixed parameters, exact closed-form solutions. Four tiers of increasing
-        complexity — from constant consumption to welfare reinvestment.
+        Fixed parameters, exact closed-form solutions. Three tiers of increasing
+        complexity — from constant consumption to welfare income.
       </p>
       <span class="card-cta">Explore →</span>
     </a>
-    <a class="mode-card mode-card--coming-soon" routerLink="/stochastic">
+    <a class="mode-card" routerLink="/stochastic">
       <h2>Stochastic</h2>
       <p>
-        Probabilistic return rates, Monte Carlo trajectories, and ruin
-        probability analysis. Coming soon.
+        Probabilistic parameters, Monte Carlo trajectories, and ruin probability
+        analysis across thousands of simulated paths.
       </p>
-      <span class="card-cta">Learn more →</span>
+      <span class="card-cta">Explore →</span>
     </a>
   </div>
 </div>
