@@ -1,0 +1,16 @@
+backend/venv/
+**/__pycache__/
+**/*.pyc
+**/*.pyo
+# Strip numpy bloat
+**/numpy/core/tests/
+**/numpy/testing/
+**/numpy/tests/
+**/numpy/f2py/
+**/numpy/distutils/
+**/numpy/ma/tests/
+**/numpy/lib/tests/
+**/numpy/linalg/tests/
+**/numpy/fft/tests/
+**/numpy/polynomial/tests/
+**/numpy/random/tests/
