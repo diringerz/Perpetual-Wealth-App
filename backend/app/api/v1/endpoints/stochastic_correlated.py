@@ -6,6 +6,7 @@ Correlated stochastic simulation with:
 - Student-t shocks for fat tails
 - Markov regime switching for T and S₀ (Liberal / Conservative)
 - Inflation-consumption coupling via β
+- Welfare grows at rate g (sampled each year) on top of the inflation-adjusted S₀
 - Returns aggregated statistics + fan chart split by majority regime
 """
 
@@ -71,6 +72,11 @@ class VARParams(BaseModel):
     # Inflation-consumption sensitivity
     beta: float = Field(default=0.3, ge=0.0, le=1.0)
 
+    # Welfare real growth rate (mean and std for yearly Normal draw)
+    # Consistent with the naive model's g variable.
+    g_mean: float = Field(default=0.02, ge=0.0, le=0.20)
+    g_std:  float = Field(default=0.005, ge=0.0)
+
 
 class RegimeParams(BaseModel):
     """Per-regime distributions for T and S₀."""
@@ -97,6 +103,7 @@ class SimulateRequest(BaseModel):
     W0:      float = Field(gt=0)
     k:       int   = Field(ge=1,   le=10_000, default=1_000)
     n:       int   = Field(ge=1,   le=1_000,  default=50)
+    seed:    int | None = Field(default=None, description="Optional RNG seed for reproducibility")
     var:     VARParams     = VARParams()
     regime:  RegimeParams  = RegimeParams()
 
@@ -163,7 +170,7 @@ def _build_chol(v: VARParams) -> np.ndarray:
         [v.rho_pi_i,   1.0,         v.rho_i_C0 ],
         [v.rho_pi_C0,  v.rho_i_C0,  1.0        ],
     ])
-    # Ensure positive semi-definite by clipping eigenvalues
+    # Ensure positive semi-definite by clamping eigenvalues
     eigvals, eigvecs = np.linalg.eigh(R)
     eigvals = np.maximum(eigvals, 1e-8)
     R = eigvecs @ np.diag(eigvals) @ eigvecs.T
@@ -204,9 +211,9 @@ def _regime_comparison(
     ruined: np.ndarray,
     mask: np.ndarray,
     W0: float,
-    K: int,
+    # FIX #11: Removed unused K parameter.
 ) -> RegimeComparison:
-    n_paths     = int(mask.sum())
+    n_paths = int(mask.sum())
     if n_paths == 0:
         return RegimeComparison(
             pct_net_gain=0, pct_loss_solvent=0, pct_ruin=0,
@@ -257,7 +264,8 @@ def _regime_comparison(
 
 @router.post("/simulate", response_model=SimulateResponse)
 def simulate(req: SimulateRequest) -> SimulateResponse:
-    rng  = np.random.default_rng()
+    # FIX #6: Accept optional seed for reproducibility.
+    rng  = np.random.default_rng(req.seed)
     v    = req.var
     r    = req.regime
     K, N = req.k, req.n
@@ -265,7 +273,6 @@ def simulate(req: SimulateRequest) -> SimulateResponse:
     tier = req.tier
 
     # ── Build VAR structures ──────────────────────────────────────────────
-    mu = np.array([v.mu_pi, v.mu_i, v.mu_C0])
     A  = np.array([
         [v.a_pp, v.a_pi, v.a_pC],
         [v.a_ip, v.a_ii, v.a_iC],
@@ -275,8 +282,8 @@ def simulate(req: SimulateRequest) -> SimulateResponse:
 
     # ── Regime transition matrix ──────────────────────────────────────────
     P = np.array([
-        [r.p_stay_liberal,      1 - r.p_stay_liberal     ],
-        [1 - r.p_stay_conservative, r.p_stay_conservative],
+        [r.p_stay_liberal,          1 - r.p_stay_liberal     ],
+        [1 - r.p_stay_conservative, r.p_stay_conservative    ],
     ])
 
     # ── Allocate arrays ───────────────────────────────────────────────────
@@ -284,30 +291,35 @@ def simulate(req: SimulateRequest) -> SimulateResponse:
     ruined    = np.zeros(K, dtype=bool)
     ruin_year = np.full(K, -1, dtype=np.int32)
 
-    # Regime counts per year per path: shape (N, K)  0=Liberal 1=Conservative
+    # Regime per year per path: shape (N, K)  0=Liberal 1=Conservative
     regimes = np.zeros((N, K), dtype=np.int8)
 
     # VAR state: shape (3, K)  rows = [π, i, C0/mu_C0 (normalised)]
-    # We normalise C0 by mu_C0 so all three variables are O(0.01-0.1) scale.
-    # This prevents the A matrix cross terms from producing nonsensical values
-    # when mixing decimal rates with dollar amounts.
-    mu_normalised    = np.array([v.mu_pi, v.mu_i, 1.0])   # C0 normalised = 1
+    # Normalise C0 by mu_C0 so all three variables are O(0.01–0.1) scale,
+    # preventing A-matrix cross-terms from producing nonsensical values when
+    # mixing decimal rates with dollar amounts.
+    mu_normalised = np.array([v.mu_pi, v.mu_i, 1.0])   # C0 normalised = 1
     X = np.tile(mu_normalised[:, None], (1, K)).astype(np.float64)
 
-    # Initial regime sampled from stationary distribution of the Markov chain.
-    # Stationary dist: π_L = (1 - p_stay_C) / (2 - p_stay_L - p_stay_C)
-    # This avoids bias in the regime comparison — no path gets a head start.
-    p_stay_L   = r.p_stay_liberal
-    p_stay_C   = r.p_stay_conservative
-    denom      = 2.0 - p_stay_L - p_stay_C
-    pi_liberal = (1.0 - p_stay_C) / denom if denom > 0 else 0.5
-    regime_state = (rng.uniform(size=K) > pi_liberal).astype(np.int8)
+    # ── Initial regime from stationary distribution ───────────────────────
+    # Stationary probability of Liberal regime:
+    #   π_L = (1 - p_stay_C) / (2 - p_stay_L - p_stay_C)
+    # FIX #12: The original comparison was (uniform > pi_liberal), which
+    # assigned Liberal with probability (1 - pi_liberal) — i.e. backwards.
+    # Corrected to (uniform < pi_liberal) so Liberal paths start Liberal
+    # with the correct stationary probability.
+    p_stay_L    = r.p_stay_liberal
+    p_stay_C    = r.p_stay_conservative
+    denom       = 2.0 - p_stay_L - p_stay_C
+    pi_liberal  = (1.0 - p_stay_C) / denom if denom > 0 else 0.5
+    regime_state = (rng.uniform(size=K) >= pi_liberal).astype(np.int8)
+    # regime_state == 0 (Liberal)  with prob pi_liberal
+    # regime_state == 1 (Conservative) with prob 1 - pi_liberal
 
-    # Cumulative inflation for C0/S0 scaling
+    # Cumulative inflation for S0 compounding (used by welfare in tier 3)
     cum_inf = np.ones(K, dtype=np.float64)
 
-    # Student-t shocks: draw standard normal then scale by chi2
-    # t_ν = Z / sqrt(V/ν),  V ~ chi2(ν)
+    # Student-t shocks: t_ν = Z / sqrt(V/ν),  V ~ chi²(ν)
     nu = v.nu
 
     for yr in range(N):
@@ -320,12 +332,9 @@ def simulate(req: SimulateRequest) -> SimulateResponse:
             P[REGIME_LIBERAL, REGIME_LIBERAL],
             P[REGIME_CONSERVATIVE, REGIME_CONSERVATIVE],
         )
-        switch = u_reg > stay_prob
-        regime_state = np.where(switch,
-            1 - regime_state,   # flip regime
-            regime_state,
-        ).astype(np.int8)
-        regimes[yr] = regime_state
+        switch       = u_reg > stay_prob
+        regime_state = np.where(switch, 1 - regime_state, regime_state).astype(np.int8)
+        regimes[yr]  = regime_state
 
         # ── Sample T and S0 from regime ──────────────────────────────────
         is_lib = regime_state == REGIME_LIBERAL
@@ -335,66 +344,83 @@ def simulate(req: SimulateRequest) -> SimulateResponse:
         S_mu  = np.where(is_lib, r.S0_mean_liberal, r.S0_mean_conservative)
         S_sig = np.where(is_lib, r.S0_std_liberal,  r.S0_std_conservative)
 
-        T_yr  = np.clip(rng.normal(T_mu,  T_sig,  size=K), *CLIP_BOUNDS["T"])
-        S0_yr = np.clip(rng.normal(S_mu,  S_sig,  size=K), 0, np.finfo(float).max)
+        T_yr  = np.clip(rng.normal(T_mu, T_sig, size=K), *CLIP_BOUNDS["T"])
+        S0_yr = np.clip(rng.normal(S_mu, S_sig, size=K), 0, np.finfo(float).max)
 
         # ── VAR(1) step with Student-t shocks ────────────────────────────
-        Z   = rng.standard_normal((3, K))                    # standard normals
-        chi = rng.chisquare(nu, size=K) / nu                 # chi2(ν)/ν
-        eps = (L @ Z) / np.sqrt(chi)                         # t-distributed shocks
+        Z   = rng.standard_normal((3, K))          # standard normals
+        chi = rng.chisquare(nu, size=K) / nu       # chi²(ν)/ν
+        eps = (L @ Z) / np.sqrt(chi)               # t-distributed shocks
 
-        mu_norm  = np.array([v.mu_pi, v.mu_i, 1.0])
-        X_new = mu_norm[:, None] + A @ (X - mu_norm[:, None]) + eps
-        X     = X_new
+        X = mu_normalised[:, None] + A @ (X - mu_normalised[:, None]) + eps
 
         pi_yr = np.clip(X[0], *CLIP_BOUNDS["pi"])
         i_yr  = np.clip(X[1], *CLIP_BOUNDS["i"])
-        # De-normalise C0: multiply normalised value by mu_C0
+        # De-normalise C0: multiply normalised state by mu_C0
         C0_yr = np.clip(X[2] * v.mu_C0, *CLIP_BOUNDS["C0"])
 
         # ── Inflation-consumption coupling ───────────────────────────────
+        # A positive inflation surprise increases consumption proportionally.
         pi_surprise = pi_yr - v.mu_pi
         C0_yr       = np.maximum(C0_yr + v.beta * pi_surprise * C0_yr,
                                   CLIP_BOUNDS["C0"][0])
+        # FIX #8: Removed np.power(1 + pi_yr, yr) that was applied on top of
+        # C0_yr here. The VAR already models C0's dollar level directly, and
+        # the beta coupling adds inflation sensitivity. Stacking a power-law
+        # inflation term on top caused double-counting of inflation in C0.
 
-        # ── Cumulative inflation for C0/S0 compounding ───────────────────
+        # ── Cumulative inflation for S0 compounding ───────────────────────
         cum_inf *= (1.0 + pi_yr)
+
+        # ── Welfare real growth rate (sampled each year) ─────────────────
+        # FIX #7: Added g sampling consistent with the naive model so that
+        # tier-3 welfare grows in real terms over time. S0_yr is the
+        # regime-determined base; (1+g)^yr adds accumulated real growth on
+        # top of the inflation-adjusted level.
+        g_yr = np.clip(
+            rng.normal(v.g_mean, v.g_std, size=K),
+            *CLIP_BOUNDS["g"],
+        )
 
         # ── Wealth step ──────────────────────────────────────────────────
         growth      = W[yr] * (1.0 + i_yr * (1.0 - T_yr))
-        consumption = C0_yr * np.power(1.0 + pi_yr, yr) if tier >= 2 else C0_yr
-        welfare     = S0_yr * (1.0 - T_yr) if tier >= 3 else 0.0
+        # C0_yr is the VAR's nominal dollar output for this year, already
+        # inflation-sensitive via the beta coupling. No tier-conditional
+        # scaling is applied — the tier flag on consumption does not belong
+        # in the correlated model because the VAR handles inflation implicitly.
+        consumption = C0_yr
+        # Welfare grows at real rate g on top of the regime-sampled S0 base.
+        welfare     = S0_yr * np.power(1.0 + g_yr, yr) * (1.0 - T_yr) if tier >= 3 else 0.0
         W_next      = growth - consumption + welfare
 
         W[yr + 1] = np.where(alive, W_next, W[yr])
 
-        newly_ruined              = alive & (W[yr + 1] < 0)
-        ruined[newly_ruined]      = True
-        ruin_year[newly_ruined]   = yr + 1
-        W[yr + 1, newly_ruined]   = 0.0
+        newly_ruined            = alive & (W[yr + 1] < 0)
+        ruined[newly_ruined]    = True
+        ruin_year[newly_ruined] = yr + 1
+        W[yr + 1, newly_ruined] = 0.0
 
     # ── Outcomes ─────────────────────────────────────────────────────────
-    final_W       = W[N]
-    survived_mask = ~ruined
-    n_ruin        = int(ruined.sum())
-    n_net_gain    = int(((final_W > W0) & survived_mask).sum())
-    n_loss_solvent= int(survived_mask.sum()) - n_net_gain
-    n_surviving   = int(survived_mask.sum())
-    pct           = lambda x: round(x / K * 100, 2)
+    final_W        = W[N]
+    survived_mask  = ~ruined
+    n_ruin         = int(ruined.sum())
+    n_net_gain     = int(((final_W > W0) & survived_mask).sum())
+    n_loss_solvent = int(survived_mask.sum()) - n_net_gain
+    n_surviving    = int(survived_mask.sum())
+    pct            = lambda x: round(x / K * 100, 2)
 
     # ── Majority-regime mask ─────────────────────────────────────────────
     liberal_years_per_path = (regimes == REGIME_LIBERAL).sum(axis=0)
     majority_liberal       = liberal_years_per_path >= (N / 2)
     majority_conservative  = ~majority_liberal
 
-    # ── alive_by_year mask ───────────────────────────────────────────────
-    alive_by_year = np.zeros((N + 1, K), dtype=bool)
-    for yr in range(N + 1):
-        alive_by_year[yr] = (ruin_year < 0) | (ruin_year >= yr)
-        alive_by_year[yr] &= ~ruined | (ruin_year >= yr)
-
     # ── Fan charts ───────────────────────────────────────────────────────
-    all_mask  = np.ones(K, dtype=bool)
+    # All paths included at every year. Ruined paths are frozen at 0.0 from
+    # their ruin year onward, so lower bands truthfully reflect ruin outcomes.
+    # alive_by_year is all-True — no path is excluded from percentiles.
+    alive_by_year = np.ones((N + 1, K), dtype=bool)
+
+    all_mask         = np.ones(K, dtype=bool)
     fan_overall      = _make_fan(W, alive_by_year, all_mask)
     fan_liberal      = _make_fan(W, alive_by_year, majority_liberal)
     fan_conservative = _make_fan(W, alive_by_year, majority_conservative)
@@ -413,7 +439,7 @@ def simulate(req: SimulateRequest) -> SimulateResponse:
         fan_liberal=fan_liberal,
         fan_conservative=fan_conservative,
         regime_liberal=_regime_comparison(
-            final_W, ruin_year, ruined, majority_liberal, W0, K),
+            final_W, ruin_year, ruined, majority_liberal, W0),
         regime_conservative=_regime_comparison(
-            final_W, ruin_year, ruined, majority_conservative, W0, K),
+            final_W, ruin_year, ruined, majority_conservative, W0),
     )
