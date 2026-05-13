@@ -1,4 +1,4 @@
 export const environment = {
   production: true,
-  apiUrl: 'https://perpetual-wealth-api.vercel.app',
+  apiUrl: 'https://your-deployed-backend-url.com',
 };
