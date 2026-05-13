@@ -41,33 +41,39 @@
             }
           },
           "configurations": {
-            "production": {
-              "budgets": [
-                {
-                  "type": "initial",
-                  "maximumWarning": "500kB",
-                  "maximumError": "1MB"
-                },
-                {
-                  "type": "anyComponentStyle",
-                  "maximumWarning": "4kB",
-                  "maximumError": "8kB"
-                }
-              ],
-              "outputHashing": "all"
-            },
-            "development": {
-              "optimization": false,
-              "extractLicenses": false,
-              "sourceMap": true,
-              "fileReplacements": [
-                {
-                  "replace": "src/environments/environment.ts",
-                  "with": "src/environments/environment.development.ts"
-                }
-              ]
-            }
-          },
+  "production": {
+    "fileReplacements": [
+      {
+        "replace": "src/environments/environment.ts",
+        "with": "src/environments/environment.prod.ts"
+      }
+    ],
+    "budgets": [
+      {
+        "type": "initial",
+        "maximumWarning": "500kB",
+        "maximumError": "1MB"
+      },
+      {
+        "type": "anyComponentStyle",
+        "maximumWarning": "4kB",
+        "maximumError": "11kB"
+      }
+    ],
+    "outputHashing": "all"
+  },
+  "development": {
+    "optimization": false,
+    "extractLicenses": false,
+    "sourceMap": true,
+    "fileReplacements": [
+      {
+        "replace": "src/environments/environment.ts",
+        "with": "src/environments/environment.development.ts"
+      }
+    ]
+  }
+},
           "defaultConfiguration": "production"
         },
         "serve": {
