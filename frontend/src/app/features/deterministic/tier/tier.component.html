@@ -80,26 +80,69 @@
       </div>
 
       <!-- W0 formula as fraction -->
-      <div class="stat stat--formula">
-        <span class="stat-label">Initial Wealth Formula</span>
-        <div class="math-formula">
-          <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML">
-            <mrow>
-              <msub><mi>W</mi><mn>0</mn></msub>
-              <mo>=</mo>
-              <mfrac>
-                <msub><mi>C</mi><mn>0</mn></msub>
-                <mrow><mi>r</mi><mo>&#8722;</mo><mi>&#960;</mi></mrow>
-              </mfrac>
-              <mo>&#8722;</mo>
-              <mfrac>
-                <mrow><msub><mi>S</mi><mn>0</mn></msub><mo>(</mo><mn>1</mn><mo>&#8722;</mo><mi>T</mi><mo>)</mo></mrow>
-                <mrow><mi>r</mi><mo>&#8722;</mo><mi>g</mi></mrow>
-              </mfrac>
-            </mrow>
-          </math>
-        </div>
-      </div>
+      <!-- W0 formula as fraction -->
+<div class="stat stat--formula">
+  <span class="stat-label">Initial Wealth Formula</span>
+  <div class="math-formula">
+
+    <!-- Tier 1: W0 = C0 / r_real -->
+    <math *ngIf="tierConfig.tier === 1" display="inline" xmlns="http://www.w3.org/1998/Math/MathML">
+      <mrow>
+        <msub><mi>W</mi><mn>0</mn></msub>
+        <mo>=</mo>
+        <mfrac>
+          <msub><mi>C</mi><mn>0</mn></msub>
+          <msub><mi>r</mi><mtext>real</mtext></msub>
+        </mfrac>
+      </mrow>
+    </math>
+
+    <!-- Tier 2: W0 = C0 / (r_real - π) -->
+    <math *ngIf="tierConfig.tier === 2" display="inline" xmlns="http://www.w3.org/1998/Math/MathML">
+      <mrow>
+        <msub><mi>W</mi><mn>0</mn></msub>
+        <mo>=</mo>
+        <mfrac>
+          <msub><mi>C</mi><mn>0</mn></msub>
+          <mrow>
+            <msub><mi>r</mi><mtext>real</mtext></msub>
+            <mo>&#8722;</mo>
+            <mi>&#960;</mi>
+          </mrow>
+        </mfrac>
+      </mrow>
+    </math>
+
+    <!-- Tier 3: W0 = C0 / (r_real - π) - S0(1-T) / (r_real - g) -->
+    <math *ngIf="tierConfig.tier === 3" display="inline" xmlns="http://www.w3.org/1998/Math/MathML">
+      <mrow>
+        <msub><mi>W</mi><mn>0</mn></msub>
+        <mo>=</mo>
+        <mfrac>
+          <msub><mi>C</mi><mn>0</mn></msub>
+          <mrow>
+            <msub><mi>r</mi><mtext>real</mtext></msub>
+            <mo>&#8722;</mo>
+            <mi>&#960;</mi>
+          </mrow>
+        </mfrac>
+        <mo>&#8722;</mo>
+        <mfrac>
+          <mrow>
+            <msub><mi>S</mi><mn>0</mn></msub>
+            <mo>(</mo><mn>1</mn><mo>&#8722;</mo><mi>T</mi><mo>)</mo>
+          </mrow>
+          <mrow>
+            <msub><mi>r</mi><mtext>real</mtext></msub>
+            <mo>&#8722;</mo>
+            <mi>g</mi>
+          </mrow>
+        </mfrac>
+      </mrow>
+    </math>
+
+  </div>
+</div>
 
       <!-- r_real formula as fraction -->
       <div class="stat stat--formula">
