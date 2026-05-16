@@ -126,3 +126,24 @@
     h2 { color: v.$text-secondary; }
   }
 }
+
+// ─── Footer ──────────────────────────────────────────────────────────────────
+
+.home-footer {
+  text-align: center;
+  padding: 16px;
+  font-size: 0.8rem;
+  color: $color-sub;
+  border-top: 1px solid $color-border;
+
+  &__link {
+    font-weight: 600;
+    color: $color-primary;
+    text-decoration: none;
+    transition: color 0.15s ease;
+
+    &:hover {
+      color: $color-accent;
+    }
+  }
+}
