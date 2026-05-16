@@ -131,19 +131,20 @@
 
 .home-footer {
   text-align: center;
-  padding: 16px;
-  font-size: 0.8rem;
-  color: $color-sub;
-  border-top: 1px solid $color-border;
+  padding: v.$space-4;
+  font-size: v.$text-sm;
+  color: v.$text-secondary;
+  border-top: 1px solid v.$border-light;
+  margin-top: v.$space-10;
 
   &__link {
-    font-weight: 600;
-    color: $color-primary;
+    font-weight: v.$weight-semi;
+    color: v.$navy;
     text-decoration: none;
-    transition: color 0.15s ease;
+    transition: color v.$transition-normal;
 
     &:hover {
-      color: $color-accent;
+      color: v.$teal;
     }
   }
 }
